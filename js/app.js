@@ -164,7 +164,7 @@ const translations = {
     importData: "Import data",
     clearData: "Clear all data",
     footerNote:
-      "Built for fun. No personal info required and nothing is stored on a server.",
+      "Built for fun. Usernames and picks are stored on the server to share the leaderboard.",
     selectNominee: "Select a nominee",
     usernameInvalid: "Username must be 2–24 letters or numbers.",
     pinInvalid: "PIN must be 4–6 digits.",
@@ -201,7 +201,7 @@ const translations = {
       "Fai i tuoi pronostici, segui i risultati e guarda la classifica locale.",
     heroTitle: "Prevedi gli Oscar e scala la classifica.",
     heroSubtitle:
-      "Fai i tuoi pronostici, guadagna punti e scopri la tua posizione quando arrivano i risultati. Niente account, niente dati personali, solo un gioco semplice e divertente.",
+      "Fai i tuoi pronostici, guadagna punti e scopri la tua posizione quando saranno svelati i vincitori. Niente account, niente dati personali, solo un gioco semplice e divertente.",
     howItWorksTitle: "Come funziona",
     howItWorksSubtitle: "Tre passaggi veloci per iniziare.",
     votingInfo:
@@ -256,7 +256,7 @@ const translations = {
     importData: "Importa dati",
     clearData: "Cancella tutti i dati",
     footerNote:
-      "Creato per divertirsi. Nessun dato personale richiesto e nulla viene salvato su un server.",
+      "Creato per divertimento e per divertirsi. Username e pronostici sono salvati sul server per condividere la classifica.",
     selectNominee: "Seleziona un candidato",
     usernameInvalid: "Lo username deve avere 2–24 lettere o numeri.",
     pinInvalid: "Il PIN deve avere 4–6 cifre.",
