@@ -132,7 +132,7 @@ const translations = {
     linkCopied: "Link copied to clipboard.",
     linkCopyFailed: "Copy failed. You can still select and copy the link.",
     usernameLabel: "Username",
-    usernameHelp: "2–24 characters, letters and numbers only.",
+    usernameHelp: "2–24 characters, letters, numbers, spaces, - or _.",
     pinLabel: "PIN",
     pinHelp: "4–6 digits. You will need this to access your link.",
     saveUsername: "Save username",
@@ -168,7 +168,7 @@ const translations = {
     footerNote:
       "Built for fun. Usernames and picks are stored on the server to share the leaderboard.",
     selectNominee: "Select a nominee",
-    usernameInvalid: "Username must be 2–24 letters or numbers.",
+    usernameInvalid: "Username must be 2–24 chars: letters, numbers, spaces, - or _.",
     pinInvalid: "PIN must be 4–6 digits.",
     usernameExists: "That username already exists. Choose another.",
     pinMismatch: "PIN does not match this username.",
@@ -226,7 +226,7 @@ const translations = {
     linkCopied: "Link copiato.",
     linkCopyFailed: "Copia non riuscita. Puoi selezionare e copiare il link.",
     usernameLabel: "Username",
-    usernameHelp: "2–24 caratteri, solo lettere e numeri.",
+    usernameHelp: "2–24 caratteri, lettere, numeri, spazi, - o _.",
     pinLabel: "PIN",
     pinHelp: "4–6 cifre. Ti servirà per accedere al tuo link.",
     saveUsername: "Salva username",
@@ -262,7 +262,7 @@ const translations = {
     footerNote:
       "Creato per divertimento e per divertirsi. Username e pronostici sono salvati sul server per condividere la classifica.",
     selectNominee: "Seleziona un candidato",
-    usernameInvalid: "Lo username deve avere 2–24 lettere o numeri.",
+    usernameInvalid: "Lo username deve avere 2–24 caratteri: lettere, numeri, spazi, - o _.",
     pinInvalid: "Il PIN deve avere 4–6 cifre.",
     usernameExists: "Questo username esiste già. Scegline un altro.",
     pinMismatch: "Il PIN non corrisponde a questo username.",
@@ -398,11 +398,11 @@ function writeJSON(key, value) {
 }
 
 function normalizeUsername(value) {
-  return value.trim();
+  return value.trim().replace(/\s+/g, " ");
 }
 
 function isValidUsername(value) {
-  return /^[A-Za-z0-9]{2,24}$/.test(value);
+  return /^[A-Za-z0-9][A-Za-z0-9 _-]{1,23}$/.test(value);
 }
 
 function normalizePin(value) {
@@ -924,9 +924,9 @@ async function handleCopyLink() {
   }
 }
 
-function applyUserFromUrl() {
+async function applyUserFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const raw = params.get("user");
+  const raw = params.get("user") || params.get("username");
   const rawPin = params.get("pin");
   if (!raw) {
     return;
@@ -942,7 +942,7 @@ function applyUserFromUrl() {
   if (!isValidPin(pin)) {
     return;
   }
-  loginWithSupabase(username, pin, false);
+  await loginWithSupabase(username, pin, false);
 }
 
 function handlePicksSubmit(event) {
@@ -1113,7 +1113,7 @@ function handleClearData() {
 async function handleLanguageChange(value) {
   setLanguage(value);
   applyTranslations();
-  applyUserFromUrl();
+  await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
   await fetchLeaderboardPicks();
@@ -1148,7 +1148,7 @@ async function init() {
 
   setCurrentUser(null);
   applyTranslations();
-  applyUserFromUrl();
+  await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
   renderLeaderboard();

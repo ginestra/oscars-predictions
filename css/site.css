@@ -39,6 +39,16 @@ a {
   font-weight: 600;
   color: var(--muted);
   margin: 0 0 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eyebrow-icon svg {
+  width: 1rem;
+  height: 1rem;
+  fill: #b8860b;
+  display: block;
 }
 
 .skip-link {
