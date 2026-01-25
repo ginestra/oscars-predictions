@@ -514,26 +514,20 @@ function createCategorySelect(category, selectedValue, prefix) {
 }
 
 function renderCategories() {
-  const picks = getPicks();
-  const results = getResults();
   const currentUser = getCurrentUser();
-  const userPicks = picks.find((entry) => entry.username === currentUser);
-  const picksByCategoryId = userPicks ? userPicks.picksByCategoryId : {};
+  const userPicks = state.picks.find((entry) => entry.username === currentUser);
+  const localPicks = getPicks();
+  const localUserPicks = localPicks.find(
+    (entry) => entry.username === currentUser
+  );
+  const picksByCategoryId =
+    userPicks?.picks_by_category || localUserPicks?.picksByCategoryId || {};
 
   elements.picksContainer.innerHTML = "";
-  elements.resultsContainer.innerHTML = "";
 
   state.categories.forEach((category) => {
     elements.picksContainer.appendChild(
       createCategorySelect(category, picksByCategoryId[category.id], "picks")
-    );
-
-    elements.resultsContainer.appendChild(
-      createCategorySelect(
-        category,
-        results.winnersByCategoryId[category.id],
-        "results"
-      )
     );
   });
 
@@ -899,13 +893,17 @@ async function fetchLeaderboardPicks() {
   if (!supabaseClient) {
     return;
   }
-  const { data, error } = await supabaseClient
-    .from("leaderboard_picks")
-    .select("username, picks_by_category");
-  if (error) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("leaderboard_picks")
+      .select("username, picks_by_category");
+    if (error) {
+      return;
+    }
+    state.picks = data || [];
+  } catch (error) {
     return;
   }
-  state.picks = data || [];
 }
 
 async function handleCopyLink() {
