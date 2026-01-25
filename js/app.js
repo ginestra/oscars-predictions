@@ -13,7 +13,8 @@ const state = {
   categories: [],
   pointsPerCategory: 1,
   ceremonyDate: null,
-  picks: []
+  picks: [],
+  ceremonyYear: null
 };
 
 let currentLanguage = "en";
@@ -89,7 +90,6 @@ const elements = {
   picksContainer: document.querySelector("#picks-container"),
   picksStatus: document.querySelector("#picks-status"),
   resultsForm: document.querySelector("#results-form"),
-  resultsContainer: document.querySelector("#results-container"),
   resultsStatus: document.querySelector("#results-status"),
   leaderboardBody: document.querySelector("#leaderboard-body"),
   leaderboardStatus: document.querySelector("#leaderboard-status"),
@@ -143,10 +143,12 @@ const translations = {
       "Make a selection for each category. You can update your picks any time before results are entered.",
     picksDeadline: "Submit at least one pick. Voting closes {date}.",
     savePicks: "Save picks",
-    resultsTitle: "Results entry",
+    resultsTitle: "Results",
     resultsSubtitle:
-      "Enter winners to calculate scores. Results are stored locally in your browser only.",
-    saveResults: "Save results",
+      "Winners are fetched automatically when the Oscars site updates.",
+    resultsLoading: "Checking for results...",
+    resultsUpdated: "Results updated.",
+    resultsUnavailable: "Results are not available yet.",
     leaderboardTitle: "Leaderboard",
     leaderboardCaption: "Leaderboard with total points",
     leaderboardRank: "Rank",
@@ -235,10 +237,12 @@ const translations = {
       "Seleziona un candidato per ogni categoria. Puoi modificare i pronostici fino all'inserimento dei risultati.",
     picksDeadline: "Inserisci almeno un pronostico. Le votazioni chiudono {date}.",
     savePicks: "Salva pronostici",
-    resultsTitle: "Inserisci risultati",
+    resultsTitle: "Risultati",
     resultsSubtitle:
-      "Inserisci i vincitori per calcolare i punteggi. I risultati restano solo nel browser.",
-    saveResults: "Salva risultati",
+      "I vincitori vengono caricati automaticamente quando il sito degli Oscar si aggiorna.",
+    resultsLoading: "Controllo risultati...",
+    resultsUpdated: "Risultati aggiornati.",
+    resultsUnavailable: "I risultati non sono ancora disponibili.",
     leaderboardTitle: "Classifica",
     leaderboardCaption: "Classifica con punteggio totale",
     leaderboardRank: "Posizione",
@@ -974,26 +978,73 @@ function handlePicksSubmit(event) {
   savePicksWithSupabase(picksByCategoryId, missing);
 }
 
-function handleResultsSubmit(event) {
-  event.preventDefault();
-  const winnersByCategoryId = {};
-  let missing = 0;
-
-  state.categories.forEach((category) => {
-    const select = elements.resultsForm.querySelector(
-      `select[name="${category.id}"]`
-    );
-    const value = select.value;
-    if (!value) {
-      missing += 1;
-    } else {
-      winnersByCategoryId[category.id] = value;
+async function fetchWinnersFromOscars() {
+  if (!elements.resultsStatus || !state.ceremonyYear) {
+    return;
+  }
+  setStatus(elements.resultsStatus, t("resultsLoading"));
+  const url = `https://r.jina.ai/http://www.oscars.org/oscars/ceremonies/${state.ceremonyYear}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      setStatus(elements.resultsStatus, t("resultsUnavailable"));
+      return;
     }
-  });
+    const text = await response.text();
+    const winnersByCategoryId = parseWinnersFromText(text);
+    if (!Object.keys(winnersByCategoryId).length) {
+      setStatus(elements.resultsStatus, t("resultsUnavailable"));
+      return;
+    }
+    saveResults(winnersByCategoryId);
+    setStatus(elements.resultsStatus, t("resultsUpdated"));
+    renderLeaderboard();
+  } catch (error) {
+    setStatus(elements.resultsStatus, t("resultsUnavailable"));
+  }
+}
 
-  saveResults(winnersByCategoryId);
-  setStatus(elements.resultsStatus, t("resultsSaved", missing));
-  renderLeaderboard();
+function shouldPollResults() {
+  const now = new Date();
+  const windowStart = new Date(Date.UTC(2026, 2, 15, 20, 0, 0));
+  const windowEnd = new Date(Date.UTC(2026, 2, 16, 8, 0, 0));
+  return now >= windowStart && now <= windowEnd;
+}
+
+function scheduleResultsPolling() {
+  if (!shouldPollResults()) {
+    return;
+  }
+  setInterval(fetchWinnersFromOscars, 60 * 60 * 1000);
+}
+
+function parseWinnersFromText(rawText) {
+  const lines = rawText
+    .split("\n")
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  const winnersByCategoryId = {};
+  const isCategoryLine = (index) =>
+    Boolean(lines[index]) &&
+    lines[index] !== "Winner" &&
+    lines[index + 1] === "Winner";
+
+  for (let i = 0; i < lines.length - 2; i += 1) {
+    if (!isCategoryLine(i)) {
+      continue;
+    }
+    const categoryName = lines[i];
+    const winnerName = lines[i + 2];
+    const category = state.categories.find(
+      (entry) => entry.name === categoryName
+    );
+    if (category && winnerName) {
+      winnersByCategoryId[category.id] = winnerName;
+    }
+  }
+
+  return winnersByCategoryId;
 }
 
 function handleExport() {
@@ -1089,6 +1140,7 @@ async function init() {
     state.categories = data.categories || [];
     state.pointsPerCategory = data.pointsPerCategory || 1;
     state.ceremonyDate = data.ceremonyDate || null;
+    state.ceremonyYear = data.year || null;
   } catch (error) {
     setStatus(
       elements.dataStatus,
@@ -1124,7 +1176,8 @@ async function init() {
     elements.copyLinkButton.addEventListener("click", handleCopyLink);
   }
   elements.picksForm.addEventListener("submit", handlePicksSubmit);
-  elements.resultsForm.addEventListener("submit", handleResultsSubmit);
+  fetchWinnersFromOscars();
+  scheduleResultsPolling();
   elements.exportButton.addEventListener("click", handleExport);
   elements.importInput.addEventListener("change", handleImport);
   elements.clearButton.addEventListener("click", handleClearData);

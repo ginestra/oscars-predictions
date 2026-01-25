@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Oscars Predictions</title>
     <meta name="description" content="Make your Oscars picks, track results, and see a local leaderboard.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
       href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@600;700&display=swap"
       rel="stylesheet"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-DFU1fNd7l4p2OHnPd1BfL1x8wL+azH4FQxQJlfW6JbF9C4WbQbdttt1nS3R9kGQj3p9Z+G9l7v4m+X9xY6g3ug=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     >
     <link rel="stylesheet" href="css/site.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -192,14 +200,10 @@
           </section>
 
           <section aria-labelledby="results-title" class="card stack">
-            <h2 id="results-title" data-i18n="resultsTitle">Results entry</h2>
+            <h2 id="results-title" data-i18n="resultsTitle">Results</h2>
             <p class="muted" data-i18n="resultsSubtitle">
-              Enter winners to calculate scores. Results are stored locally in your browser only.
+              Winners are fetched automatically when the Oscars site updates.
             </p>
-            <form id="results-form" class="stack" novalidate>
-              <div id="results-container" class="stack"></div>
-              <button type="submit" data-i18n="saveResults">Save results</button>
-            </form>
             <p id="results-status" class="status" aria-live="polite" role="status"></p>
           </section>
         </div>
