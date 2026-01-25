@@ -4,7 +4,8 @@ A simple, accessible Oscars prediction game built with vanilla HTML, CSS, and Ja
 
 ## Features
 
-- Local-only usernames and picks (stored in your browser).
+- Shared leaderboard (Supabase-backed).
+- Username + PIN login (no personal details).
 - Admin-style results entry to calculate scores.
 - Deterministic leaderboard with tie handling.
 - JSON export/import for moving data between devices.
@@ -20,9 +21,23 @@ python3 -m http.server 8080
 
 Then visit `http://localhost:8080` in your browser.
 
+## Shared leaderboard (Supabase)
+
+This app uses Supabase RPC functions for shared users and picks.
+
+1. Create a Supabase project.
+2. Run the SQL in `supabase/schema.sql` in the Supabase SQL editor.
+3. Set your keys in `js/config.js`:
+
+```
+window.SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+window.SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+```
+
 ## How to vote
 
 Pick at least one category to submit your predictions. You can update your picks until the ceremony deadline (set in `data/categories.json` as `ceremonyDate`, 12:00 GMT).
+Users share a personal link that includes their username + PIN for access.
 
 ## Update nominees (one-time scrape)
 
@@ -49,11 +64,10 @@ Edit `data/categories.json` to:
 - Replace nominees with the real list.
 - Adjust per-category points (optional).
 
-The app stores data in `localStorage` under the following keys:
-- `oscars_users`
-- `oscars_picks`
+Local-only data is stored in `localStorage` under the following keys:
 - `oscars_results`
 - `oscars_current_user`
+- `oscars_current_user_id`
 
 ## File Overview
 
@@ -64,4 +78,4 @@ The app stores data in `localStorage` under the following keys:
 
 ## Notes
 
-This is a static app. The leaderboard is local to the browser unless users export/import data.
+The app is static but uses Supabase to share users and picks across devices.

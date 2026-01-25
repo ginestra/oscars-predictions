@@ -5,16 +5,26 @@ const STORAGE_KEYS = {
   picks: "oscars_picks",
   results: "oscars_results",
   currentUser: "oscars_current_user",
+  currentUserId: "oscars_current_user_id",
   language: "oscars_language"
 };
 
 const state = {
   categories: [],
   pointsPerCategory: 1,
-  ceremonyDate: null
+  ceremonyDate: null,
+  picks: []
 };
 
 let currentLanguage = "en";
+let sessionPin = null;
+
+const SUPABASE_URL = window.SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
+const supabaseClient =
+  SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 function getVotingDeadline() {
   if (state.ceremonyDate) {
     const parsed = new Date(state.ceremonyDate);
@@ -31,8 +41,11 @@ function formatVotingDeadline(locale) {
     return "March 15, 12:00 GMT";
   }
   return new Intl.DateTimeFormat(locale === "it" ? "it-IT" : "en-GB", {
-    dateStyle: "long",
-    timeStyle: "short",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: "UTC",
     timeZoneName: "short"
   }).format(deadline);
@@ -50,6 +63,7 @@ const memoryStore = {
   oscars_picks: [],
   oscars_results: { winnersByCategoryId: {}, finalizedAt: null },
   oscars_current_user: null,
+  oscars_current_user_id: null,
   oscars_language: "en"
 };
 
@@ -161,6 +175,10 @@ const translations = {
     picksRequired: "Please select at least one category.",
     votingClosed: "Voting is closed. You can no longer update picks.",
     accountLocked: "Accounts are locked after the voting deadline.",
+    supabaseMissing:
+      "Supabase is not configured yet. Add your project URL and anon key in js/config.js.",
+    loginFailed: "Login failed. Check your username and PIN.",
+    saveFailed: "Could not save your picks. Please try again.",
     picksSaved: (missing) =>
       missing
         ? `Saved picks. ${missing} category${missing === 1 ? "" : "ies"} left.`
@@ -249,6 +267,10 @@ const translations = {
     picksRequired: "Seleziona almeno una categoria.",
     votingClosed: "Le votazioni sono chiuse. Non puoi più modificare i pronostici.",
     accountLocked: "Gli account sono bloccati dopo la scadenza delle votazioni.",
+    supabaseMissing:
+      "Supabase non è configurato. Inserisci URL progetto e anon key in js/config.js.",
+    loginFailed: "Accesso non riuscito. Controlla username e PIN.",
+    saveFailed: "Impossibile salvare i pronostici. Riprova.",
     picksSaved: (missing) =>
       missing
         ? `Pronostici salvati. Mancano ${missing} categor${missing === 1 ? "ia" : "ie"}.`
@@ -425,6 +447,23 @@ function setCurrentUser(username) {
   }
 }
 
+function getCurrentUserId() {
+  return memoryStore[STORAGE_KEYS.currentUserId];
+}
+
+function setCurrentUserId(userId) {
+  memoryStore[STORAGE_KEYS.currentUserId] = userId;
+  try {
+    if (userId) {
+      localStorage.setItem(STORAGE_KEYS.currentUserId, userId);
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.currentUserId);
+    }
+  } catch (error) {
+    // Ignore storage failures
+  }
+}
+
 function setStatus(target, message) {
   target.textContent = message;
 }
@@ -517,9 +556,10 @@ function renderCurrentUser() {
     elements.currentUser.textContent = currentUser || "";
   }
   if (elements.personalLinkInput) {
-    const user = currentUser ? findUser(currentUser) : null;
     elements.personalLinkInput.value =
-      user && user.pin ? buildPersonalLink(user.username, user.pin) : "";
+      currentUser && sessionPin
+        ? buildPersonalLink(currentUser, sessionPin)
+        : "";
   }
   if (elements.copyStatus) {
     elements.copyStatus.textContent = "";
@@ -549,64 +589,10 @@ function applyDeadlineState() {
   }
 }
 
-function saveUser(username, pin) {
-  const users = getUsers();
-  const existing = users.find(
-    (user) => user.username.toLowerCase() === username.toLowerCase()
-  );
-  if (!existing) {
-    users.push({ username, pin, createdAt: new Date().toISOString() });
-    writeJSON(STORAGE_KEYS.users, users);
-  }
+function saveUser(username, pin, userId) {
   setCurrentUser(username);
-}
-
-function ensureUserPin(username, pin) {
-  const users = getUsers();
-  const existing = users.find(
-    (user) => user.username.toLowerCase() === username.toLowerCase()
-  );
-  if (!existing) {
-    return false;
-  }
-  if (!existing.pin) {
-    existing.pin = pin;
-    writeJSON(STORAGE_KEYS.users, users);
-  }
-  return true;
-}
-
-function renameUser(oldUsername, newUsername, pin) {
-  const users = getUsers();
-  const existing = users.find(
-    (user) => user.username.toLowerCase() === oldUsername.toLowerCase()
-  );
-  if (!existing || existing.pin !== pin) {
-    return false;
-  }
-  const nameTaken = users.some(
-    (user) => user.username.toLowerCase() === newUsername.toLowerCase()
-  );
-  if (nameTaken) {
-    return false;
-  }
-  existing.username = newUsername;
-  writeJSON(STORAGE_KEYS.users, users);
-
-  const picks = getPicks();
-  const pickEntry = picks.find(
-    (entry) => entry.username.toLowerCase() === oldUsername.toLowerCase()
-  );
-  if (pickEntry) {
-    pickEntry.username = newUsername;
-    writeJSON(STORAGE_KEYS.picks, picks);
-  }
-
-  const currentUser = getCurrentUser();
-  if (currentUser && currentUser.toLowerCase() === oldUsername.toLowerCase()) {
-    setCurrentUser(newUsername);
-  }
-  return true;
+  setCurrentUserId(userId);
+  sessionPin = pin;
 }
 
 function savePicks(picksByCategoryId) {
@@ -632,18 +618,19 @@ function saveResults(winnersByCategoryId) {
 }
 
 function calculateScores() {
-  const picks = getPicks();
+  const picks = state.picks;
   const results = getResults();
   const scores = [];
 
   picks.forEach((entry) => {
     let total = 0;
     let correct = 0;
-    const votedCount = Object.values(entry.picksByCategoryId || {}).filter(
+    const picksByCategoryId = entry.picks_by_category || {};
+    const votedCount = Object.values(picksByCategoryId || {}).filter(
       Boolean
     ).length;
     state.categories.forEach((category) => {
-      const selected = entry.picksByCategoryId[category.id];
+      const selected = picksByCategoryId[category.id];
       const winner = results.winnersByCategoryId[category.id];
       if (selected && winner && selected === winner) {
         const points = Number(category.points || state.pointsPerCategory);
@@ -740,25 +727,7 @@ function handleRegistrationSubmit(event) {
 
   elements.usernameInput.removeAttribute("aria-invalid");
   elements.pinInput.removeAttribute("aria-invalid");
-
-  const existing = findUser(username);
-  if (existing) {
-    if (existing.pin && existing.pin !== pin) {
-      setStatus(elements.usernameStatus, t("usernameExists"));
-      return;
-    }
-    ensureUserPin(username, pin);
-  } else {
-    saveUser(username, pin);
-  }
-  setStatus(elements.usernameStatus, t("usernameSaved", username));
-  if (existing) {
-    setCurrentUser(existing.username);
-  }
-  renderCurrentUser();
-  renderCategories();
-  elements.usernameInput.value = "";
-  elements.pinInput.value = "";
+  loginWithSupabase(username, pin, true);
 }
 
 function handleUpdateUsernameSubmit(event) {
@@ -787,29 +756,7 @@ function handleUpdateUsernameSubmit(event) {
 
   elements.updateUsernameInput.removeAttribute("aria-invalid");
   elements.updatePinInput.removeAttribute("aria-invalid");
-
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
-    return;
-  }
-
-  const existing = findUser(username);
-  if (existing) {
-    setStatus(elements.updateStatus, t("usernameExists"));
-    return;
-  }
-
-  const renamed = renameUser(currentUser, username, pin);
-  if (!renamed) {
-    setStatus(elements.updateStatus, t("pinMismatch"));
-    return;
-  }
-  renderCurrentUser();
-  renderCategories();
-  setStatus(elements.updateStatus, t("usernameUpdated", username));
-  elements.updateUsernameInput.value = "";
-  elements.updatePinInput.value = "";
-  elements.updateUsernameForm.hidden = true;
+  renameUserWithSupabase(username, pin);
 }
 
 function openUpdateUsername() {
@@ -849,6 +796,114 @@ function buildPersonalLink(username, pin) {
   return url.toString();
 }
 
+function ensureSupabase() {
+  if (!supabaseClient) {
+    setStatus(elements.usernameStatus, t("supabaseMissing"));
+    return false;
+  }
+  return true;
+}
+
+async function loginWithSupabase(username, pin, showSuccess) {
+  if (!ensureSupabase()) {
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc("login_user", {
+      p_username: username,
+      p_pin: pin
+    });
+    if (error || !data) {
+      setStatus(elements.usernameStatus, t("loginFailed"));
+      return;
+    }
+    saveUser(username, pin, data);
+    setStatus(
+      elements.usernameStatus,
+      showSuccess ? t("usernameSaved", username) : ""
+    );
+    elements.usernameInput.value = "";
+    elements.pinInput.value = "";
+    renderCurrentUser();
+    renderCategories();
+    await fetchLeaderboardPicks();
+    renderLeaderboard();
+  } catch (error) {
+    setStatus(elements.usernameStatus, t("loginFailed"));
+  }
+}
+
+async function renameUserWithSupabase(newUsername, pin) {
+  if (!ensureSupabase()) {
+    return;
+  }
+  const userId = getCurrentUserId();
+  if (!userId) {
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc("rename_user", {
+      p_user_id: userId,
+      p_pin: pin,
+      p_new_username: newUsername
+    });
+    if (error || !data) {
+      setStatus(elements.updateStatus, t("pinMismatch"));
+      return;
+    }
+    saveUser(newUsername, pin, userId);
+    setStatus(elements.updateStatus, t("usernameUpdated", newUsername));
+    elements.updateUsernameInput.value = "";
+    elements.updatePinInput.value = "";
+    elements.updateUsernameForm.hidden = true;
+    renderCurrentUser();
+    await fetchLeaderboardPicks();
+    renderLeaderboard();
+  } catch (error) {
+    setStatus(elements.updateStatus, t("loginFailed"));
+  }
+}
+
+async function savePicksWithSupabase(picksByCategoryId, missing) {
+  if (!ensureSupabase()) {
+    return;
+  }
+  const userId = getCurrentUserId();
+  if (!userId || !sessionPin) {
+    setStatus(elements.picksStatus, t("loginFailed"));
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc("save_picks", {
+      p_user_id: userId,
+      p_pin: sessionPin,
+      p_picks: picksByCategoryId
+    });
+    if (error || !data) {
+      setStatus(elements.picksStatus, t("saveFailed"));
+      return;
+    }
+    setStatus(elements.picksStatus, t("picksSaved", missing));
+    await fetchLeaderboardPicks();
+    renderLeaderboard();
+  } catch (error) {
+    setStatus(elements.picksStatus, t("saveFailed"));
+  }
+}
+
+async function fetchLeaderboardPicks() {
+  if (!supabaseClient) {
+    return;
+  }
+  const { data, error } = await supabaseClient
+    .from("leaderboard_picks")
+    .select("username, picks_by_category");
+  if (error) {
+    return;
+  }
+  state.picks = data || [];
+}
+
 async function handleCopyLink() {
   if (!elements.personalLinkInput) {
     return;
@@ -885,10 +940,7 @@ function applyUserFromUrl() {
   if (!isValidPin(pin)) {
     return;
   }
-  const existing = findUser(username);
-  if (existing && existing.pin === pin) {
-    setCurrentUser(existing.username);
-  }
+  loginWithSupabase(username, pin, false);
 }
 
 function handlePicksSubmit(event) {
@@ -919,9 +971,7 @@ function handlePicksSubmit(event) {
     return;
   }
 
-  savePicks(picksByCategoryId);
-  setStatus(elements.picksStatus, t("picksSaved", missing));
-  renderLeaderboard();
+  savePicksWithSupabase(picksByCategoryId, missing);
 }
 
 function handleResultsSubmit(event) {
@@ -1002,22 +1052,22 @@ function handleImport(event) {
 }
 
 function handleClearData() {
-  localStorage.removeItem(STORAGE_KEYS.users);
-  localStorage.removeItem(STORAGE_KEYS.picks);
   localStorage.removeItem(STORAGE_KEYS.results);
   localStorage.removeItem(STORAGE_KEYS.currentUser);
+  localStorage.removeItem(STORAGE_KEYS.currentUserId);
   renderCurrentUser();
   renderCategories();
   renderLeaderboard();
   setStatus(elements.dataStatus, t("cleared"));
 }
 
-function handleLanguageChange(value) {
+async function handleLanguageChange(value) {
   setLanguage(value);
   applyTranslations();
   applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
+  await fetchLeaderboardPicks();
   renderLeaderboard();
   applyDeadlineState();
 }
