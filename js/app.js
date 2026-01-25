@@ -93,10 +93,6 @@ const elements = {
   resultsStatus: document.querySelector("#results-status"),
   leaderboardBody: document.querySelector("#leaderboard-body"),
   leaderboardStatus: document.querySelector("#leaderboard-status"),
-  exportButton: document.querySelector("#export-data"),
-  importInput: document.querySelector("#import-data"),
-  clearButton: document.querySelector("#clear-data"),
-  dataStatus: document.querySelector("#data-status"),
   languageSelect: document.querySelector("#language-select")
 };
 
@@ -469,6 +465,9 @@ function setCurrentUserId(userId) {
 }
 
 function setStatus(target, message) {
+  if (!target) {
+    return;
+  }
   target.textContent = message;
 }
 
@@ -1176,9 +1175,6 @@ async function init() {
   elements.picksForm.addEventListener("submit", handlePicksSubmit);
   fetchWinnersFromOscars();
   scheduleResultsPolling();
-  elements.exportButton.addEventListener("click", handleExport);
-  elements.importInput.addEventListener("change", handleImport);
-  elements.clearButton.addEventListener("click", handleClearData);
   if (elements.languageSelect) {
     elements.languageSelect.addEventListener("change", (event) => {
       handleLanguageChange(event.target.value);

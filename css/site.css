@@ -187,6 +187,10 @@ h3 {
   font-weight: 600;
 }
 
+p.alone {
+  padding-top: 1em;
+}
+
 input,
 select,
 button {

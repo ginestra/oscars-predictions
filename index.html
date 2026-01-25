@@ -80,7 +80,7 @@
             <p class="muted" data-i18n="step3Text">See the leaderboard update after winners are set.</p>
           </div>
         </div>
-        <p class="muted" data-i18n="votingInfo">
+        <p class="muted alone" data-i18n="votingInfo">
           Vote in any categories you want (at least one). Voting closes March 15 at 12:00 GMT.
         </p>
       </section>
@@ -204,14 +204,6 @@
             </form>
             <p id="picks-status" class="status" aria-live="polite" role="status"></p>
           </section>
-
-          <section aria-labelledby="results-title" class="card stack">
-            <h2 id="results-title" data-i18n="resultsTitle">Results</h2>
-            <p class="muted" data-i18n="resultsSubtitle">
-              Winners are fetched automatically when the Oscars site updates.
-            </p>
-            <p id="results-status" class="status" aria-live="polite" role="status"></p>
-          </section>
         </div>
 
         <div class="stack">
@@ -239,21 +231,14 @@
             <p id="leaderboard-status" class="status" aria-live="polite" role="status"></p>
           </section>
 
-          <section aria-labelledby="data-title" class="card stack">
-            <h2 id="data-title" data-i18n="dataTitle">Data tools</h2>
-            <p class="muted" data-i18n="dataSubtitle">
-              Export or import your local data. Use this to move picks between devices.
+          <section aria-labelledby="results-title" class="card stack">
+            <h2 id="results-title" data-i18n="resultsTitle">Results</h2>
+            <p class="muted" data-i18n="resultsSubtitle">
+              Winners are fetched automatically when the Oscars site updates.
             </p>
-            <div class="button-row">
-              <button type="button" id="export-data" data-i18n="exportData">Export data</button>
-              <label class="file-button" for="import-data">
-                <span data-i18n="importData">Import data</span>
-              </label>
-              <input id="import-data" class="visually-hidden" type="file" accept="application/json">
-              <button type="button" class="danger" id="clear-data" data-i18n="clearData">Clear all data</button>
-            </div>
-            <p id="data-status" class="status" aria-live="polite" role="status"></p>
+            <p id="results-status" class="status" aria-live="polite" role="status"></p>
           </section>
+
         </div>
       </div>
     </main>
