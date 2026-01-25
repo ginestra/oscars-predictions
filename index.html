@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Oscars Forecast</title>
+    <meta name="description" content="Make your Oscars picks, track results, and see a local leaderboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@600;700&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="css/site.css">
+    <script defer src="js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <div class="container hero hero-full">
+        <div class="hero-text">
+          <div class="hero-top">
+            <p class="eyebrow" data-i18n="appName">Oscars Forecast</p>
+            <div class="language-switch">
+              <label for="language-select" class="visually-hidden" data-i18n="languageLabel">Language</label>
+              <select id="language-select" aria-label="Language">
+                <option value="en">English</option>
+                <option value="it">Italiano</option>
+              </select>
+            </div>
+          </div>
+          <h1 data-i18n="heroTitle">Predict the Oscars and climb the leaderboard.</h1>
+          <p class="lede" data-i18n="heroSubtitle">
+            Make your picks, earn points, and see how you stack up once results are in.
+            No accounts, no personal details, just a simple and fun game.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="container stack">
+      <noscript>
+        <div class="notice" role="status">
+          This app needs JavaScript enabled to save picks and calculate scores.
+        </div>
+      </noscript>
+
+      <section class="how-it-works">
+        <div class="section-heading">
+          <h2 data-i18n="howItWorksTitle">How it works</h2>
+          <p class="muted" data-i18n="howItWorksSubtitle">Three quick steps to join the fun.</p>
+        </div>
+        <div class="steps-grid">
+          <div class="card step-card">
+            <h3 data-i18n="step1Title">1. Make picks</h3>
+            <p class="muted" data-i18n="step1Text">Select a nominee for every category.</p>
+          </div>
+          <div class="card step-card">
+            <h3 data-i18n="step2Title">2. Score points</h3>
+            <p class="muted" data-i18n="step2Text">Correct picks earn points toward your total.</p>
+          </div>
+          <div class="card step-card">
+            <h3 data-i18n="step3Title">3. Track results</h3>
+            <p class="muted" data-i18n="step3Text">See the leaderboard update after winners are set.</p>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="registration-title" class="card stack hero-card">
+        <div id="registration-empty" class="stack">
+          <h2 id="registration-title" class="card-title" data-i18n="registrationTitle">Select your username</h2>
+          <p class="muted" data-i18n="registrationSubtitle">Pick a username to begin.</p>
+          <form id="registration-form" class="stack" novalidate>
+            <div class="field">
+              <label for="username" data-i18n="usernameLabel">Username</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autocomplete="nickname"
+                inputmode="text"
+                minlength="2"
+                maxlength="24"
+                required
+                aria-describedby="username-help"
+              >
+              <p id="username-help" class="help" data-i18n="usernameHelp">
+                2–24 characters, letters and numbers only.
+              </p>
+            </div>
+            <div class="field">
+              <label for="pin" data-i18n="pinLabel">PIN</label>
+              <input
+                id="pin"
+                name="pin"
+                type="password"
+                inputmode="numeric"
+                minlength="4"
+                maxlength="6"
+                required
+                aria-describedby="pin-help"
+              >
+              <p id="pin-help" class="help" data-i18n="pinHelp">
+                4–6 digits. You will need this to access your link.
+              </p>
+            </div>
+            <button type="submit" data-i18n="saveUsername">Save username</button>
+          </form>
+          <p id="username-status" class="status" aria-live="polite" role="status"></p>
+        </div>
+
+        <div id="registration-summary" class="stack" hidden>
+          <h2 class="card-title">
+            <span data-i18n="hiLabel">Hi</span> <strong id="current-user"></strong>
+          </h2>
+          <p class="muted" data-i18n="usernameActions">Update or add another user.</p>
+          <div class="button-row">
+            <button type="button" id="edit-username" data-i18n="editUsername">Update your username</button>
+            <button type="button" id="add-user" data-i18n="addUser">Add another user</button>
+          </div>
+          <div class="link-box">
+            <p class="muted" data-i18n="personalLinkLabel">Your personal link</p>
+            <div class="link-row">
+              <input id="personal-link" type="text" readonly aria-label="Personal link">
+              <button type="button" id="copy-link" data-i18n="copyLink">Copy link</button>
+            </div>
+            <p class="help" id="copy-status" aria-live="polite"></p>
+          </div>
+          <form id="update-username-form" class="stack" novalidate hidden>
+            <div class="field">
+              <label for="update-username-input" data-i18n="usernameLabel">Username</label>
+              <input
+                id="update-username-input"
+                name="update-username"
+                type="text"
+                autocomplete="nickname"
+                inputmode="text"
+                minlength="2"
+                maxlength="24"
+                required
+                aria-describedby="update-username-help"
+              >
+              <p id="update-username-help" class="help" data-i18n="usernameHelp">
+                2–24 characters, letters and numbers only.
+              </p>
+            </div>
+            <div class="field">
+              <label for="update-pin-input" data-i18n="pinLabel">PIN</label>
+              <input
+                id="update-pin-input"
+                name="update-pin"
+                type="password"
+                inputmode="numeric"
+                minlength="4"
+                maxlength="6"
+                required
+                aria-describedby="update-pin-help"
+              >
+              <p id="update-pin-help" class="help" data-i18n="pinHelp">
+                4–6 digits. You will need this to access your link.
+              </p>
+            </div>
+            <div class="button-row">
+              <button type="submit" data-i18n="saveUsername">Save username</button>
+              <button type="button" id="cancel-update" data-i18n="cancel">Cancel</button>
+            </div>
+          </form>
+          <p id="update-status" class="status" aria-live="polite" role="status"></p>
+        </div>
+      </section>
+
+      <div class="main-grid">
+        <div class="stack">
+          <section aria-labelledby="picks-title" class="card stack">
+            <h2 id="picks-title" data-i18n="picksTitle">Your picks</h2>
+            <p class="muted" data-i18n="picksSubtitle">
+              Make a selection for each category. You can update your picks any time before results are entered.
+            </p>
+            <form id="picks-form" class="stack" novalidate>
+              <div id="picks-container" class="stack"></div>
+              <button type="submit" data-i18n="savePicks">Save picks</button>
+            </form>
+            <p id="picks-status" class="status" aria-live="polite" role="status"></p>
+          </section>
+
+          <section aria-labelledby="results-title" class="card stack">
+            <h2 id="results-title" data-i18n="resultsTitle">Results entry</h2>
+            <p class="muted" data-i18n="resultsSubtitle">
+              Enter winners to calculate scores. Results are stored locally in your browser only.
+            </p>
+            <form id="results-form" class="stack" novalidate>
+              <div id="results-container" class="stack"></div>
+              <button type="submit" data-i18n="saveResults">Save results</button>
+            </form>
+            <p id="results-status" class="status" aria-live="polite" role="status"></p>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section aria-labelledby="leaderboard-title" class="card stack">
+            <h2 id="leaderboard-title" data-i18n="leaderboardTitle">Leaderboard</h2>
+            <div class="table-wrap">
+              <table class="leaderboard">
+                <caption class="visually-hidden" data-i18n="leaderboardCaption">Leaderboard with total points</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" data-i18n="leaderboardRank">Rank</th>
+                    <th scope="col" data-i18n="leaderboardUsername">Username</th>
+                    <th scope="col" data-i18n="leaderboardPoints">Points</th>
+                    <th scope="col" data-i18n="leaderboardCorrect">Correct</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                  <tr>
+                    <td colspan="4" data-i18n="leaderboardEmpty">No results yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p id="leaderboard-status" class="status" aria-live="polite" role="status"></p>
+          </section>
+
+          <section aria-labelledby="data-title" class="card stack">
+            <h2 id="data-title" data-i18n="dataTitle">Data tools</h2>
+            <p class="muted" data-i18n="dataSubtitle">
+              Export or import your local data. Use this to move picks between devices.
+            </p>
+            <div class="button-row">
+              <button type="button" id="export-data" data-i18n="exportData">Export data</button>
+              <label class="file-button" for="import-data">
+                <span data-i18n="importData">Import data</span>
+              </label>
+              <input id="import-data" class="visually-hidden" type="file" accept="application/json">
+              <button type="button" class="danger" id="clear-data" data-i18n="clearData">Clear all data</button>
+            </div>
+            <p id="data-status" class="status" aria-live="polite" role="status"></p>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="muted" data-i18n="footerNote">
+          Built for fun. No personal info required and nothing is stored on a server.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

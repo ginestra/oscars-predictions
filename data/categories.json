@@ -1,0 +1,299 @@
+{
+  "year": "2026",
+  "pointsPerCategory": 1,
+  "categories": [
+    {
+      "id": "actor_in_a_leading_role",
+      "name": "Actor in a Leading Role",
+      "points": 1,
+      "nominees": [
+        "Timothée Chalamet",
+        "Leonardo DiCaprio",
+        "Ethan Hawke",
+        "Michael B. Jordan",
+        "Wagner Moura"
+      ]
+    },
+    {
+      "id": "actor_in_a_supporting_role",
+      "name": "Actor in a Supporting Role",
+      "points": 1,
+      "nominees": [
+        "Benicio Del Toro",
+        "Jacob Elordi",
+        "Delroy Lindo",
+        "Sean Penn",
+        "Stellan Skarsgård"
+      ]
+    },
+    {
+      "id": "actress_in_a_leading_role",
+      "name": "Actress in a Leading Role",
+      "points": 1,
+      "nominees": [
+        "Jessie Buckley",
+        "Rose Byrne",
+        "Kate Hudson",
+        "Renate Reinsve",
+        "Emma Stone"
+      ]
+    },
+    {
+      "id": "actress_in_a_supporting_role",
+      "name": "Actress in a Supporting Role",
+      "points": 1,
+      "nominees": [
+        "Elle Fanning",
+        "Inga Ibsdotter Lilleaas",
+        "Amy Madigan",
+        "Wunmi Mosaku",
+        "Teyana Taylor"
+      ]
+    },
+    {
+      "id": "animated_feature_film",
+      "name": "Animated Feature Film",
+      "points": 1,
+      "nominees": [
+        "Arco",
+        "Elio",
+        "KPop Demon Hunters",
+        "Little Amélie or the Character of Rain",
+        "Zootopia 2"
+      ]
+    },
+    {
+      "id": "animated_short_film",
+      "name": "Animated Short Film",
+      "points": 1,
+      "nominees": [
+        "Butterfly",
+        "Forevergreen",
+        "The Girl Who Cried Pearls",
+        "Retirement Plan",
+        "The Three Sisters"
+      ]
+    },
+    {
+      "id": "casting",
+      "name": "Casting",
+      "points": 1,
+      "nominees": [
+        "Hamnet",
+        "Marty Supreme",
+        "One Battle after Another",
+        "The Secret Agent",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "cinematography",
+      "name": "Cinematography",
+      "points": 1,
+      "nominees": [
+        "Frankenstein",
+        "Marty Supreme",
+        "One Battle after Another",
+        "Sinners",
+        "Train Dreams"
+      ]
+    },
+    {
+      "id": "costume_design",
+      "name": "Costume Design",
+      "points": 1,
+      "nominees": [
+        "Avatar: Fire and Ash",
+        "Frankenstein",
+        "Hamnet",
+        "Marty Supreme",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "directing",
+      "name": "Directing",
+      "points": 1,
+      "nominees": [
+        "Hamnet",
+        "Marty Supreme",
+        "One Battle after Another",
+        "Sentimental Value",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "documentary_feature_film",
+      "name": "Documentary Feature Film",
+      "points": 1,
+      "nominees": [
+        "The Alabama Solution",
+        "Come See Me in the Good Light",
+        "Cutting through Rocks",
+        "Mr. Nobody against Putin",
+        "The Perfect Neighbor"
+      ]
+    },
+    {
+      "id": "documentary_short_film",
+      "name": "Documentary Short Film",
+      "points": 1,
+      "nominees": [
+        "All the Empty Rooms",
+        "Armed Only with a Camera: The Life and Death of Brent Renaud",
+        "Children No More: \"Were and Are Gone\"",
+        "The Devil Is Busy",
+        "Perfectly a Strangeness"
+      ]
+    },
+    {
+      "id": "film_editing",
+      "name": "Film Editing",
+      "points": 1,
+      "nominees": [
+        "F1",
+        "Marty Supreme",
+        "One Battle after Another",
+        "Sentimental Value",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "international_feature_film",
+      "name": "International Feature Film",
+      "points": 1,
+      "nominees": [
+        "Brazil — The Secret Agent",
+        "France — It Was Just an Accident",
+        "Norway — Sentimental Value",
+        "Spain — Sirāt",
+        "Tunisia — The Voice of Hind Rajab"
+      ]
+    },
+    {
+      "id": "live_action_short_film",
+      "name": "Live Action Short Film",
+      "points": 1,
+      "nominees": [
+        "Butcher's Stain",
+        "A Friend of Dorothy",
+        "Jane Austen's Period Drama",
+        "The Singers",
+        "Two People Exchanging Saliva"
+      ]
+    },
+    {
+      "id": "makeup_and_hairstyling",
+      "name": "Makeup and Hairstyling",
+      "points": 1,
+      "nominees": [
+        "Frankenstein",
+        "Kokuho",
+        "Sinners",
+        "The Smashing Machine",
+        "The Ugly Stepsister"
+      ]
+    },
+    {
+      "id": "music_original_score",
+      "name": "Music (Original Score)",
+      "points": 1,
+      "nominees": [
+        "Bugonia",
+        "Frankenstein",
+        "Hamnet",
+        "One Battle after Another",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "music_original_song",
+      "name": "Music (Original Song)",
+      "points": 1,
+      "nominees": [
+        "Dear Me",
+        "Golden",
+        "I Lied To You",
+        "Sweet Dreams Of Joy",
+        "Train Dreams"
+      ]
+    },
+    {
+      "id": "best_picture",
+      "name": "Best Picture",
+      "points": 2,
+      "nominees": [
+        "Bugonia",
+        "F1",
+        "Frankenstein",
+        "Hamnet",
+        "Marty Supreme",
+        "One Battle after Another",
+        "The Secret Agent",
+        "Sentimental Value",
+        "Sinners",
+        "Train Dreams"
+      ]
+    },
+    {
+      "id": "production_design",
+      "name": "Production Design",
+      "points": 1,
+      "nominees": [
+        "Frankenstein",
+        "Hamnet",
+        "Marty Supreme",
+        "One Battle after Another",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "sound",
+      "name": "Sound",
+      "points": 1,
+      "nominees": [
+        "F1",
+        "Frankenstein",
+        "One Battle after Another",
+        "Sinners",
+        "Sirāt"
+      ]
+    },
+    {
+      "id": "visual_effects",
+      "name": "Visual Effects",
+      "points": 1,
+      "nominees": [
+        "Avatar: Fire and Ash",
+        "F1",
+        "Jurassic World Rebirth",
+        "The Lost Bus",
+        "Sinners"
+      ]
+    },
+    {
+      "id": "writing_adapted_screenplay",
+      "name": "Writing (Adapted Screenplay)",
+      "points": 1,
+      "nominees": [
+        "Bugonia",
+        "Frankenstein",
+        "Hamnet",
+        "One Battle after Another",
+        "Train Dreams"
+      ]
+    },
+    {
+      "id": "writing_original_screenplay",
+      "name": "Writing (Original Screenplay)",
+      "points": 1,
+      "nominees": [
+        "Blue Moon",
+        "It Was Just an Accident",
+        "Marty Supreme",
+        "Sentimental Value",
+        "Sinners"
+      ]
+    }
+  ]
+}

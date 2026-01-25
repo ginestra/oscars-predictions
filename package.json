@@ -1,0 +1,11 @@
+{
+  "name": "oscars-forecast",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "fetch-nominees": "node scripts/fetch-nominees.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0"
+  }
+}
