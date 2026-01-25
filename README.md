@@ -1,4 +1,4 @@
-# Oscars Forecast
+# Oscars Predictions
 
 A simple, accessible Oscars prediction game built with vanilla HTML, CSS, and JavaScript. Users register with only a username, make picks, and see a local leaderboard once results are entered. No money, no betting, and no personal details.
 
@@ -19,6 +19,10 @@ python3 -m http.server 8080
 ```
 
 Then visit `http://localhost:8080` in your browser.
+
+## How to vote
+
+Pick at least one category to submit your predictions. You can update your picks until the ceremony deadline (set in `data/categories.json` as `ceremonyDate`, 12:00 GMT).
 
 ## Update nominees (one-time scrape)
 

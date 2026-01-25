@@ -10,10 +10,41 @@ const STORAGE_KEYS = {
 
 const state = {
   categories: [],
-  pointsPerCategory: 1
+  pointsPerCategory: 1,
+  ceremonyDate: null
 };
 
 let currentLanguage = "en";
+function getVotingDeadline() {
+  if (state.ceremonyDate) {
+    const parsed = new Date(state.ceremonyDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
+function formatVotingDeadline(locale) {
+  const deadline = getVotingDeadline();
+  if (!deadline) {
+    return "March 15, 12:00 GMT";
+  }
+  return new Intl.DateTimeFormat(locale === "it" ? "it-IT" : "en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "UTC",
+    timeZoneName: "short"
+  }).format(deadline);
+}
+
+function isVotingOpen() {
+  const deadline = getVotingDeadline();
+  if (!deadline) {
+    return true;
+  }
+  return new Date() <= deadline;
+}
 const memoryStore = {
   oscars_users: [],
   oscars_picks: [],
@@ -57,9 +88,9 @@ const elements = {
 
 const translations = {
   en: {
-    appName: "Oscars Forecast",
+    appName: "Oscars Predictions",
     languageLabel: "Language",
-    documentTitle: "Oscars Forecast",
+    documentTitle: "Oscars Predictions",
     metaDescription:
       "Make your Oscars picks, track results, and see a local leaderboard.",
     heroTitle: "Predict the Oscars and climb the leaderboard.",
@@ -67,6 +98,8 @@ const translations = {
       "Make your picks, earn points, and see how you stack up once results are in. No accounts, no personal details, just a simple and fun game.",
     howItWorksTitle: "How it works",
     howItWorksSubtitle: "Three quick steps to join the fun.",
+    votingInfo:
+      "Vote in any categories you want (at least one). Voting closes {date}.",
     step1Title: "1. Make picks",
     step1Text: "Select a nominee for every category.",
     step2Title: "2. Score points",
@@ -94,6 +127,7 @@ const translations = {
     picksTitle: "Your picks",
     picksSubtitle:
       "Make a selection for each category. You can update your picks any time before results are entered.",
+    picksDeadline: "Submit at least one pick. Voting closes {date}.",
     savePicks: "Save picks",
     resultsTitle: "Results entry",
     resultsSubtitle:
@@ -103,6 +137,7 @@ const translations = {
     leaderboardCaption: "Leaderboard with total points",
     leaderboardRank: "Rank",
     leaderboardUsername: "Username",
+    leaderboardVotes: "Voted",
     leaderboardPoints: "Points",
     leaderboardCorrect: "Correct",
     leaderboardEmpty: "No results yet.",
@@ -123,6 +158,9 @@ const translations = {
     pinMismatch: "PIN does not match this username.",
     usernameSaved: (name) => `Saved username "${name}".`,
     usernameUpdated: (name) => `Username updated to "${name}".`,
+    picksRequired: "Please select at least one category.",
+    votingClosed: "Voting is closed. You can no longer update picks.",
+    accountLocked: "Accounts are locked after the voting deadline.",
     picksSaved: (missing) =>
       missing
         ? `Saved picks. ${missing} category${missing === 1 ? "" : "ies"} left.`
@@ -148,6 +186,8 @@ const translations = {
       "Fai i tuoi pronostici, guadagna punti e scopri la tua posizione quando arrivano i risultati. Niente account, niente dati personali, solo un gioco semplice e divertente.",
     howItWorksTitle: "Come funziona",
     howItWorksSubtitle: "Tre passaggi veloci per iniziare.",
+    votingInfo:
+      "Vota nelle categorie che vuoi (almeno una). Le votazioni chiudono {date}.",
     step1Title: "1. Fai i pronostici",
     step1Text: "Seleziona un candidato per ogni categoria.",
     step2Title: "2. Ottieni punti",
@@ -175,6 +215,7 @@ const translations = {
     picksTitle: "I tuoi pronostici",
     picksSubtitle:
       "Seleziona un candidato per ogni categoria. Puoi modificare i pronostici fino all'inserimento dei risultati.",
+    picksDeadline: "Inserisci almeno un pronostico. Le votazioni chiudono {date}.",
     savePicks: "Salva pronostici",
     resultsTitle: "Inserisci risultati",
     resultsSubtitle:
@@ -184,6 +225,7 @@ const translations = {
     leaderboardCaption: "Classifica con punteggio totale",
     leaderboardRank: "Posizione",
     leaderboardUsername: "Username",
+    leaderboardVotes: "Votati",
     leaderboardPoints: "Punti",
     leaderboardCorrect: "Corretti",
     leaderboardEmpty: "Nessun risultato ancora.",
@@ -204,6 +246,9 @@ const translations = {
     pinMismatch: "Il PIN non corrisponde a questo username.",
     usernameSaved: (name) => `Username "${name}" salvato.`,
     usernameUpdated: (name) => `Username aggiornato a "${name}".`,
+    picksRequired: "Seleziona almeno una categoria.",
+    votingClosed: "Le votazioni sono chiuse. Non puoi più modificare i pronostici.",
+    accountLocked: "Gli account sono bloccati dopo la scadenza delle votazioni.",
     picksSaved: (missing) =>
       missing
         ? `Pronostici salvati. Mancano ${missing} categor${missing === 1 ? "ia" : "ie"}.`
@@ -279,7 +324,10 @@ function getCategoryLabel(category) {
 function applyTranslations() {
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     const key = node.getAttribute("data-i18n");
-    const value = translations[getLanguage()]?.[key] ?? translations.en[key];
+    let value = translations[getLanguage()]?.[key] ?? translations.en[key];
+    if (typeof value === "string" && value.includes("{date}")) {
+      value = value.replace("{date}", formatVotingDeadline(getLanguage()));
+    }
     if (typeof value === "string") {
       node.textContent = value;
     }
@@ -480,6 +528,27 @@ function renderCurrentUser() {
   setFormEnabled(elements.picksForm, Boolean(currentUser));
 }
 
+function applyDeadlineState() {
+  const votingOpen = isVotingOpen();
+  if (elements.picksForm) {
+    setFormEnabled(elements.picksForm, Boolean(getCurrentUser()) && votingOpen);
+  }
+
+  const usernameLocked = !votingOpen;
+  if (elements.registrationForm) {
+    setFormEnabled(elements.registrationForm, !usernameLocked);
+  }
+  if (elements.editUsernameButton) {
+    elements.editUsernameButton.disabled = usernameLocked;
+  }
+  if (elements.addUserButton) {
+    elements.addUserButton.disabled = usernameLocked;
+  }
+  if (elements.updateUsernameForm) {
+    setFormEnabled(elements.updateUsernameForm, !usernameLocked);
+  }
+}
+
 function saveUser(username, pin) {
   const users = getUsers();
   const existing = users.find(
@@ -570,6 +639,9 @@ function calculateScores() {
   picks.forEach((entry) => {
     let total = 0;
     let correct = 0;
+    const votedCount = Object.values(entry.picksByCategoryId || {}).filter(
+      Boolean
+    ).length;
     state.categories.forEach((category) => {
       const selected = entry.picksByCategoryId[category.id];
       const winner = results.winnersByCategoryId[category.id];
@@ -583,7 +655,8 @@ function calculateScores() {
     scores.push({
       username: entry.username,
       score: total,
-      correct
+      correct,
+      votedCount
     });
   });
 
@@ -601,27 +674,14 @@ function calculateScores() {
 }
 
 function renderLeaderboard() {
-  const results = getResults();
-  const hasResults = Object.keys(results.winnersByCategoryId).length > 0;
   const scores = calculateScores();
 
   elements.leaderboardBody.innerHTML = "";
 
-  if (!hasResults) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
-    cell.colSpan = 4;
-    cell.textContent = t("leaderboardEmpty");
-    row.appendChild(cell);
-    elements.leaderboardBody.appendChild(row);
-    setStatus(elements.leaderboardStatus, "");
-    return;
-  }
-
   if (scores.length === 0) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 4;
+    cell.colSpan = 5;
     cell.textContent = t("leaderboardNoPicks");
     row.appendChild(cell);
     elements.leaderboardBody.appendChild(row);
@@ -644,6 +704,7 @@ function renderLeaderboard() {
     row.innerHTML = `
       <td>${currentRank}</td>
       <td>${entry.username}</td>
+      <td>${entry.votedCount}</td>
       <td>${entry.score}</td>
       <td>${entry.correct} / ${state.categories.length}</td>
     `;
@@ -655,6 +716,10 @@ function renderLeaderboard() {
 
 function handleRegistrationSubmit(event) {
   event.preventDefault();
+  if (!isVotingOpen()) {
+    setStatus(elements.usernameStatus, t("accountLocked"));
+    return;
+  }
   const raw = elements.usernameInput.value;
   const username = normalizeUsername(raw);
   const rawPin = elements.pinInput.value;
@@ -698,6 +763,10 @@ function handleRegistrationSubmit(event) {
 
 function handleUpdateUsernameSubmit(event) {
   event.preventDefault();
+  if (!isVotingOpen()) {
+    setStatus(elements.updateStatus, t("accountLocked"));
+    return;
+  }
   const raw = elements.updateUsernameInput.value;
   const username = normalizeUsername(raw);
   const rawPin = elements.updatePinInput.value;
@@ -760,6 +829,10 @@ function cancelUpdateUsername() {
 }
 
 function startAddUser() {
+  if (!isVotingOpen()) {
+    setStatus(elements.usernameStatus, t("accountLocked"));
+    return;
+  }
   if (elements.registrationEmpty && elements.registrationSummary) {
     elements.registrationSummary.hidden = true;
     elements.registrationEmpty.hidden = false;
@@ -820,8 +893,13 @@ function applyUserFromUrl() {
 
 function handlePicksSubmit(event) {
   event.preventDefault();
+  if (!isVotingOpen()) {
+    setStatus(elements.picksStatus, t("votingClosed"));
+    return;
+  }
   const picksByCategoryId = {};
   let missing = 0;
+  let selectedCount = 0;
 
   state.categories.forEach((category) => {
     const select = elements.picksForm.querySelector(
@@ -832,8 +910,14 @@ function handlePicksSubmit(event) {
       missing += 1;
     } else {
       picksByCategoryId[category.id] = value;
+      selectedCount += 1;
     }
   });
+
+  if (selectedCount === 0) {
+    setStatus(elements.picksStatus, t("picksRequired"));
+    return;
+  }
 
   savePicks(picksByCategoryId);
   setStatus(elements.picksStatus, t("picksSaved", missing));
@@ -935,6 +1019,7 @@ function handleLanguageChange(value) {
   renderCurrentUser();
   renderCategories();
   renderLeaderboard();
+  applyDeadlineState();
 }
 
 async function init() {
@@ -953,6 +1038,7 @@ async function init() {
     const data = await response.json();
     state.categories = data.categories || [];
     state.pointsPerCategory = data.pointsPerCategory || 1;
+    state.ceremonyDate = data.ceremonyDate || null;
   } catch (error) {
     setStatus(
       elements.dataStatus,
@@ -966,6 +1052,7 @@ async function init() {
   renderCurrentUser();
   renderCategories();
   renderLeaderboard();
+  applyDeadlineState();
 
   elements.registrationForm.addEventListener("submit", handleRegistrationSubmit);
   if (elements.updateUsernameForm) {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Oscars Forecast</title>
+    <title>Oscars Predictions</title>
     <meta name="description" content="Make your Oscars picks, track results, and see a local leaderboard.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,7 @@
       <div class="container hero hero-full">
         <div class="hero-text">
           <div class="hero-top">
-            <p class="eyebrow" data-i18n="appName">Oscars Forecast</p>
+            <p class="eyebrow" data-i18n="appName">Oscars Predictions</p>
             <div class="language-switch">
               <label for="language-select" class="visually-hidden" data-i18n="languageLabel">Language</label>
               <select id="language-select" aria-label="Language">
@@ -64,6 +64,9 @@
             <p class="muted" data-i18n="step3Text">See the leaderboard update after winners are set.</p>
           </div>
         </div>
+        <p class="muted" data-i18n="votingInfo">
+          Vote in any categories you want (at least one). Voting closes March 15 at 12:00 GMT.
+        </p>
       </section>
 
       <section aria-labelledby="registration-title" class="card stack hero-card">
@@ -176,6 +179,9 @@
             <p class="muted" data-i18n="picksSubtitle">
               Make a selection for each category. You can update your picks any time before results are entered.
             </p>
+            <p class="muted" data-i18n="picksDeadline">
+              Submit at least one pick. Voting closes March 15 at 12:00 GMT.
+            </p>
             <form id="picks-form" class="stack" novalidate>
               <div id="picks-container" class="stack"></div>
               <button type="submit" data-i18n="savePicks">Save picks</button>
@@ -206,13 +212,14 @@
                   <tr>
                     <th scope="col" data-i18n="leaderboardRank">Rank</th>
                     <th scope="col" data-i18n="leaderboardUsername">Username</th>
+                    <th scope="col" data-i18n="leaderboardVotes">Voted</th>
                     <th scope="col" data-i18n="leaderboardPoints">Points</th>
                     <th scope="col" data-i18n="leaderboardCorrect">Correct</th>
                   </tr>
                 </thead>
                 <tbody id="leaderboard-body">
                   <tr>
-                    <td colspan="4" data-i18n="leaderboardEmpty">No results yet.</td>
+                    <td colspan="5" data-i18n="leaderboardEmpty">No results yet.</td>
                   </tr>
                 </tbody>
               </table>

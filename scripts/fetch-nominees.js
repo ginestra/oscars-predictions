@@ -152,6 +152,26 @@ function parseNomineesFromText(rawText) {
   return categories;
 }
 
+function parseCeremonyDate(rawText) {
+  const lines = rawText
+    .split("\n")
+    .map((line) => decodeEntities(normalizeWhitespace(line)))
+    .filter(Boolean);
+
+  const dateLine = lines.find((line) =>
+    /^[A-Za-z]+, [A-Za-z]+ \d{1,2}, \d{4}$/.test(line)
+  );
+  if (!dateLine) {
+    return null;
+  }
+
+  const parsed = new Date(`${dateLine} 12:00:00 GMT`);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  return parsed.toISOString();
+}
+
 async function readExistingData() {
   try {
     const existing = await fs.readFile(OUTPUT_PATH, "utf8");
@@ -244,9 +264,12 @@ async function main() {
     existingData && existingData.pointsPerCategory
       ? existingData.pointsPerCategory
       : 1;
+  const ceremonyDate =
+    parseCeremonyDate(content) || existingData?.ceremonyDate || null;
 
   const output = {
     year,
+    ceremonyDate,
     pointsPerCategory,
     categories: mergedCategories
   };
