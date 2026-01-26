@@ -231,6 +231,25 @@
             <p id="leaderboard-status" class="status" aria-live="polite" role="status"></p>
           </section>
 
+          <section aria-labelledby="similarity-title" class="card stack">
+            <h2 id="similarity-title" data-i18n="similarityTitle">Vote similarity</h2>
+            <p class="muted" data-i18n="similaritySubtitle">
+              Compare how similar users are based on matching picks.
+            </p>
+            <div class="table-wrap">
+              <table class="heatmap" id="similarity-table">
+                <caption class="visually-hidden" data-i18n="similarityCaption">
+                  Similarity matrix of user picks
+                </caption>
+                <thead>
+                  <tr id="similarity-header"></tr>
+                </thead>
+                <tbody id="similarity-body"></tbody>
+              </table>
+            </div>
+            <p id="similarity-status" class="status" aria-live="polite" role="status"></p>
+          </section>
+
           <section aria-labelledby="results-title" class="card stack">
             <h2 id="results-title" data-i18n="resultsTitle">Results</h2>
             <p class="muted" data-i18n="resultsSubtitle">

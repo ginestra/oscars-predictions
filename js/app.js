@@ -93,6 +93,10 @@ const elements = {
   resultsStatus: document.querySelector("#results-status"),
   leaderboardBody: document.querySelector("#leaderboard-body"),
   leaderboardStatus: document.querySelector("#leaderboard-status"),
+  similarityTable: document.querySelector("#similarity-table"),
+  similarityHeader: document.querySelector("#similarity-header"),
+  similarityBody: document.querySelector("#similarity-body"),
+  similarityStatus: document.querySelector("#similarity-status"),
   languageSelect: document.querySelector("#language-select")
 };
 
@@ -155,6 +159,10 @@ const translations = {
     leaderboardEmpty: "No results yet.",
     leaderboardNoPicks: "No picks saved yet.",
     leaderboardUpdated: "Leaderboard updated.",
+    similarityTitle: "Vote similarity",
+    similaritySubtitle: "Compare how similar users are based on matching picks.",
+    similarityCaption: "Similarity matrix of user picks",
+    similarityEmpty: "Not enough data to compare users.",
     dataTitle: "Data tools",
     dataSubtitle:
       "Export or import your local data. Use this to move picks between devices.",
@@ -249,6 +257,10 @@ const translations = {
     leaderboardEmpty: "Nessun risultato ancora.",
     leaderboardNoPicks: "Nessun pronostico salvato.",
     leaderboardUpdated: "Classifica aggiornata.",
+    similarityTitle: "Somiglianza voti",
+    similaritySubtitle: "Confronta la somiglianza tra utenti in base ai pronostici.",
+    similarityCaption: "Matrice di somiglianza dei pronostici",
+    similarityEmpty: "Dati insufficienti per confrontare gli utenti.",
     dataTitle: "Strumenti dati",
     dataSubtitle:
       "Esporta o importa i dati locali. Usalo per spostare i pronostici tra dispositivi.",
@@ -696,6 +708,90 @@ function renderLeaderboard() {
   });
 
   setStatus(elements.leaderboardStatus, t("leaderboardUpdated"));
+  renderSimilarityMatrix();
+}
+
+function computeSimilarity(aPicks, bPicks) {
+  const keys = Object.keys(state.categories.reduce((acc, category) => {
+    acc[category.id] = true;
+    return acc;
+  }, {}));
+  let compared = 0;
+  let matched = 0;
+  keys.forEach((key) => {
+    const a = aPicks?.[key];
+    const b = bPicks?.[key];
+    if (a && b) {
+      compared += 1;
+      if (a === b) {
+        matched += 1;
+      }
+    }
+  });
+  return {
+    compared,
+    matched,
+    percent: compared ? Math.round((matched / compared) * 100) : 0
+  };
+}
+
+function renderSimilarityMatrix() {
+  if (!elements.similarityHeader || !elements.similarityBody) {
+    return;
+  }
+  const rows = state.picks || [];
+  const users = rows.map((row) => row.username).sort();
+  elements.similarityHeader.innerHTML = "";
+  elements.similarityBody.innerHTML = "";
+
+  if (users.length < 2) {
+    setStatus(elements.similarityStatus, t("similarityEmpty"));
+    return;
+  }
+
+  setStatus(elements.similarityStatus, "");
+
+  const headerRow = document.createElement("tr");
+  const corner = document.createElement("th");
+  corner.textContent = "";
+  headerRow.appendChild(corner);
+  users.forEach((user) => {
+    const th = document.createElement("th");
+    th.textContent = user;
+    headerRow.appendChild(th);
+  });
+  elements.similarityHeader.appendChild(headerRow);
+
+  const pickMap = rows.reduce((acc, row) => {
+    acc[row.username] = row.picks_by_category || {};
+    return acc;
+  }, {});
+
+  users.forEach((rowUser) => {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.textContent = rowUser;
+    tr.appendChild(th);
+
+    users.forEach((colUser) => {
+      const td = document.createElement("td");
+      td.className = "heatmap-cell";
+      if (rowUser === colUser) {
+        td.textContent = "—";
+        td.classList.add("is-self");
+      } else {
+        const { compared, matched, percent } = computeSimilarity(
+          pickMap[rowUser],
+          pickMap[colUser]
+        );
+        td.textContent = compared ? `${percent}%` : "—";
+        const bucket = compared ? Math.min(5, Math.floor(percent / 20)) : 0;
+        td.classList.add(`heat-${bucket}`);
+      }
+      tr.appendChild(td);
+    });
+    elements.similarityBody.appendChild(tr);
+  });
 }
 
 function handleRegistrationSubmit(event) {

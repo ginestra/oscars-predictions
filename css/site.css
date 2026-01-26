@@ -173,6 +173,7 @@ a {
 .field {
   display: grid;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 label {
@@ -204,6 +205,12 @@ select {
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
+  width: 100%;
+  max-width: 100%;
+}
+
+select {
+  text-overflow: ellipsis;
 }
 
 button,
@@ -302,6 +309,40 @@ td {
 th {
   font-weight: 700;
   background: var(--bg);
+}
+
+.heatmap {
+  table-layout: fixed;
+  min-width: 480px;
+}
+
+.heatmap th,
+.heatmap td {
+  text-align: center;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.heatmap th:first-child,
+.heatmap td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.heatmap-cell {
+  font-variant-numeric: tabular-nums;
+}
+
+.heat-0 { background: #f8f8f8; }
+.heat-1 { background: #efe2e2; }
+.heat-2 { background: #e6c8c8; }
+.heat-3 { background: #ddb0b0; }
+.heat-4 { background: #d49898; }
+.heat-5 { background: #cb8080; }
+
+.heatmap .is-self {
+  background: var(--bg);
+  font-weight: 700;
 }
 
 .visually-hidden {
