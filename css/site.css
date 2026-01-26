@@ -345,7 +345,8 @@ th {
 
 .heatmap {
   table-layout: fixed;
-  min-width: 480px;
+  min-width: 0;
+  width: 100%;
 }
 
 .heatmap th,
@@ -359,6 +360,12 @@ th {
 .heatmap td:first-child {
   text-align: left;
   font-weight: 600;
+  width: 40%;
+}
+
+.heatmap th:not(:first-child),
+.heatmap td:not(:first-child) {
+  width: 2.2rem;
 }
 
 .heatmap-cell {

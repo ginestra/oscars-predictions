@@ -476,7 +476,8 @@ function getPicks() {
 function getResults() {
   return readJSON(STORAGE_KEYS.results, {
     winnersByCategoryId: {},
-    finalizedAt: null
+    finalizedAt: null,
+    ceremonyYear: null
   });
 }
 
@@ -660,8 +661,26 @@ function savePicks(picksByCategoryId) {
 function saveResults(winnersByCategoryId) {
   writeJSON(STORAGE_KEYS.results, {
     winnersByCategoryId,
-    finalizedAt: new Date().toISOString()
+    finalizedAt: new Date().toISOString(),
+    ceremonyYear: state.ceremonyYear
   });
+}
+
+function renderResultsStatus() {
+  if (!elements.resultsStatus) {
+    return;
+  }
+  const results = getResults();
+  const hasWinners =
+    results &&
+    results.winnersByCategoryId &&
+    Object.keys(results.winnersByCategoryId).length > 0 &&
+    results.ceremonyYear &&
+    results.ceremonyYear === state.ceremonyYear;
+  setStatus(
+    elements.resultsStatus,
+    hasWinners ? t("resultsUpdated") : t("resultsUnavailable")
+  );
 }
 
 function calculateScores() {
@@ -1246,6 +1265,7 @@ function handleClearData() {
 async function handleLanguageChange(value) {
   setLanguage(value);
   applyTranslations();
+  renderResultsStatus();
   await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
@@ -1290,6 +1310,7 @@ async function init() {
   setCurrentUser(null);
   applyTranslations();
   applyTheme(currentTheme);
+  renderResultsStatus();
   await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
