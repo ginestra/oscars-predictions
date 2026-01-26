@@ -1340,6 +1340,7 @@ async function init() {
   await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
+  await fetchLeaderboardPicks();
   renderLeaderboard();
   applyDeadlineState();
 
