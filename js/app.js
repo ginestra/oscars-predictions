@@ -6,7 +6,8 @@ const STORAGE_KEYS = {
   results: "oscars_results",
   currentUser: "oscars_current_user",
   currentUserId: "oscars_current_user_id",
-  language: "oscars_language"
+  language: "oscars_language",
+  theme: "oscars_theme"
 };
 
 const state = {
@@ -19,6 +20,7 @@ const state = {
 
 let currentLanguage = "en";
 let sessionPin = null;
+let currentTheme = "system";
 
 const SUPABASE_URL = window.SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
@@ -97,6 +99,7 @@ const elements = {
   similarityHeader: document.querySelector("#similarity-header"),
   similarityBody: document.querySelector("#similarity-body"),
   similarityStatus: document.querySelector("#similarity-status"),
+  themeSelect: document.querySelector("#theme-select"),
   languageSelect: document.querySelector("#language-select")
 };
 
@@ -104,6 +107,8 @@ const translations = {
   en: {
     appName: "Oscars Predictions",
     languageLabel: "Language",
+    languageEnglish: "🇬🇧 English",
+    languageItalian: "🇮🇹 Italiano",
     documentTitle: "Oscars Predictions",
     metaDescription:
       "Make your Oscars picks, track results, and see a local leaderboard.",
@@ -163,6 +168,10 @@ const translations = {
     similaritySubtitle: "Compare how similar users are based on matching picks.",
     similarityCaption: "Similarity matrix of user picks",
     similarityEmpty: "Not enough data to compare users.",
+    themeLabel: "Theme",
+    themeSystem: "◐ System",
+    themeLight: "○ Light",
+    themeDark: "● Dark",
     dataTitle: "Data tools",
     dataSubtitle:
       "Export or import your local data. Use this to move picks between devices.",
@@ -202,6 +211,8 @@ const translations = {
   it: {
     appName: "Pronostici Oscar",
     languageLabel: "Lingua",
+    languageEnglish: "🇬🇧 Inglese",
+    languageItalian: "🇮🇹 Italiano",
     documentTitle: "Pronostici Oscar",
     metaDescription:
       "Fai i tuoi pronostici, segui i risultati e guarda la classifica locale.",
@@ -261,6 +272,10 @@ const translations = {
     similaritySubtitle: "Confronta la somiglianza tra utenti in base ai pronostici.",
     similarityCaption: "Matrice di somiglianza dei pronostici",
     similarityEmpty: "Dati insufficienti per confrontare gli utenti.",
+    themeLabel: "Tema",
+    themeSystem: "◐ Sistema",
+    themeLight: "○ Chiaro",
+    themeDark: "● Scuro",
     dataTitle: "Strumenti dati",
     dataSubtitle:
       "Esporta o importa i dati locali. Usalo per spostare i pronostici tra dispositivi.",
@@ -343,6 +358,26 @@ function setLanguage(lang) {
   memoryStore[STORAGE_KEYS.language] = currentLanguage;
 }
 
+function getSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  try {
+    localStorage.setItem(STORAGE_KEYS.theme, currentTheme);
+  } catch (error) {
+    // Ignore storage failures
+  }
+  const resolved = theme === "system" ? getSystemTheme() : theme;
+  document.documentElement.setAttribute("data-theme", resolved);
+  if (elements.themeSelect) {
+    elements.themeSelect.value = theme;
+  }
+}
+
 function t(key, ...args) {
   const lang = getLanguage();
   const value = translations[lang]?.[key] ?? translations.en[key];
@@ -374,6 +409,9 @@ function applyTranslations() {
   }
   if (elements.languageSelect) {
     elements.languageSelect.value = getLanguage();
+  }
+  if (elements.themeSelect) {
+    elements.themeSelect.value = currentTheme;
   }
 }
 
@@ -1226,6 +1264,14 @@ async function init() {
     currentLanguage = "en";
   }
   memoryStore[STORAGE_KEYS.language] = currentLanguage;
+  try {
+    const storedTheme = localStorage.getItem(STORAGE_KEYS.theme);
+    if (storedTheme) {
+      currentTheme = storedTheme;
+    }
+  } catch (error) {
+    currentTheme = "system";
+  }
 
   try {
     const response = await fetch("data/categories.json");
@@ -1243,6 +1289,7 @@ async function init() {
 
   setCurrentUser(null);
   applyTranslations();
+  applyTheme(currentTheme);
   await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
@@ -1276,9 +1323,17 @@ async function init() {
       handleLanguageChange(event.target.value);
     });
   }
+  if (elements.themeSelect) {
+    elements.themeSelect.addEventListener("change", (event) => {
+      applyTheme(event.target.value);
+    });
+  }
   document.addEventListener("change", (event) => {
     if (event.target && event.target.id === "language-select") {
       handleLanguageChange(event.target.value);
+    }
+    if (event.target && event.target.id === "theme-select") {
+      applyTheme(event.target.value);
     }
   });
 }

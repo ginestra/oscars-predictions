@@ -37,12 +37,22 @@
               </span>
               <span data-i18n="appName">Oscars Predictions</span>
             </p>
-            <div class="language-switch">
-              <label for="language-select" class="visually-hidden" data-i18n="languageLabel">Language</label>
-              <select id="language-select" aria-label="Language">
-                <option value="en">English</option>
-                <option value="it">Italiano</option>
-              </select>
+            <div class="header-controls">
+              <div class="language-switch">
+                <label for="language-select" class="visually-hidden" data-i18n="languageLabel">Language</label>
+                <select id="language-select" aria-label="Language">
+                  <option value="en" data-i18n="languageEnglish">English</option>
+                  <option value="it" data-i18n="languageItalian">Italiano</option>
+                </select>
+              </div>
+              <div class="theme-switch">
+                <label for="theme-select" class="visually-hidden" data-i18n="themeLabel">Theme</label>
+                <select id="theme-select" aria-label="Theme">
+                  <option value="system" data-i18n="themeSystem">System</option>
+                  <option value="light" data-i18n="themeLight">Light</option>
+                  <option value="dark" data-i18n="themeDark">Dark</option>
+                </select>
+              </div>
             </div>
           </div>
           <h1 data-i18n="heroTitle">Predict the Oscars and climb the leaderboard.</h1>
