@@ -18,6 +18,7 @@
   --sans: "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --serif: "Source Serif 4", "Times New Roman", Times, serif;
   --radius: 4px;
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23582c4d' d='M6 8 0 2.2 1.4.8 6 5.4 10.6.8 12 2.2z'/%3E%3C/svg%3E");
 }
 
 html[data-theme="dark"] {
@@ -31,6 +32,7 @@ html[data-theme="dark"] {
   --accent-dark: #e0b5ac;
   --danger: #c07c6f;
   --focus: #f0e9e4;
+  --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f0e9e4' d='M6 8 0 2.2 1.4.8 6 5.4 10.6.8 12 2.2z'/%3E%3C/svg%3E");
 }
 
 body {
@@ -143,7 +145,7 @@ html[data-theme="dark"] .eyebrow-icon svg {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 0.4rem 0.6rem;
-  background: var(--card);
+  background-color: var(--card);
   color: var(--text);
 }
 
@@ -151,7 +153,7 @@ html[data-theme="dark"] .eyebrow-icon svg {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 0.4rem 0.6rem;
-  background: var(--card);
+  background-color: var(--card);
   color: var(--text);
 }
 
@@ -235,7 +237,7 @@ select {
   padding: 0.6rem 0.7rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--text);
   width: 100%;
   max-width: 100%;
@@ -243,6 +245,22 @@ select {
 
 select {
   text-overflow: ellipsis;
+  appearance: none;
+  background-image: var(--select-caret);
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 0.7rem;
+  padding-right: 2rem;
+}
+
+.field.is-missing select {
+  border-color: var(--accent);
+  background-color: rgba(162, 103, 105, 0.18);
+  box-shadow: 0 0 0 3px rgba(162, 103, 105, 0.18);
+}
+
+.field.is-missing label {
+  color: var(--accent-dark);
 }
 
 button,

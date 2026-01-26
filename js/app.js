@@ -563,6 +563,29 @@ function createCategorySelect(category, selectedValue, prefix) {
   return wrapper;
 }
 
+function highlightMissingPicks() {
+  if (!elements.picksForm) {
+    return;
+  }
+  state.categories.forEach((category) => {
+    const select = elements.picksForm.querySelector(
+      `select[name="${category.id}"]`
+    );
+    if (!select) {
+      return;
+    }
+    const wrapper = select.closest(".field");
+    if (!wrapper) {
+      return;
+    }
+    if (select.value) {
+      wrapper.classList.remove("is-missing");
+    } else {
+      wrapper.classList.add("is-missing");
+    }
+  });
+}
+
 function renderCategories() {
   const currentUser = getCurrentUser();
   const userPicks = state.picks.find((entry) => entry.username === currentUser);
@@ -582,6 +605,7 @@ function renderCategories() {
   });
 
   setFormEnabled(elements.picksForm, Boolean(currentUser));
+  highlightMissingPicks();
 }
 
 function renderCurrentUser() {
@@ -1121,10 +1145,12 @@ function handlePicksSubmit(event) {
   });
 
   if (selectedCount === 0) {
+    highlightMissingPicks();
     setStatus(elements.picksStatus, t("picksRequired"));
     return;
   }
 
+  highlightMissingPicks();
   savePicksWithSupabase(picksByCategoryId, missing);
 }
 
@@ -1336,7 +1362,14 @@ async function init() {
   if (elements.copyLinkButton) {
     elements.copyLinkButton.addEventListener("click", handleCopyLink);
   }
-  elements.picksForm.addEventListener("submit", handlePicksSubmit);
+  if (elements.picksForm) {
+    elements.picksForm.addEventListener("submit", handlePicksSubmit);
+    elements.picksForm.addEventListener("change", (event) => {
+      if (event.target && event.target.matches("select")) {
+        highlightMissingPicks();
+      }
+    });
+  }
   fetchWinnersFromOscars();
   scheduleResultsPolling();
   if (elements.languageSelect) {
