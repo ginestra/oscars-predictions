@@ -1,6 +1,6 @@
 {
   "year": "2026",
-  "ceremonyDate": "2026-03-15T12:00:00Z",
+  "ceremonyDate": "2026-03-15T12:00:00.000Z",
   "pointsPerCategory": 1,
   "categories": [
     {
@@ -8,11 +8,11 @@
       "name": "Actor in a Leading Role",
       "points": 1,
       "nominees": [
-        "Timothée Chalamet",
-        "Leonardo DiCaprio",
-        "Ethan Hawke",
-        "Michael B. Jordan",
-        "Wagner Moura"
+        "Timothée Chalamet (Marty Supreme)",
+        "Leonardo DiCaprio (One Battle after Another)",
+        "Ethan Hawke (Blue Moon)",
+        "Michael B. Jordan (Sinners)",
+        "Wagner Moura (The Secret Agent)"
       ]
     },
     {
@@ -20,11 +20,11 @@
       "name": "Actor in a Supporting Role",
       "points": 1,
       "nominees": [
-        "Benicio Del Toro",
-        "Jacob Elordi",
-        "Delroy Lindo",
-        "Sean Penn",
-        "Stellan Skarsgård"
+        "Benicio Del Toro (One Battle after Another)",
+        "Jacob Elordi (Frankenstein)",
+        "Delroy Lindo (Sinners)",
+        "Sean Penn (One Battle after Another)",
+        "Stellan Skarsgård (Sentimental Value)"
       ]
     },
     {
@@ -32,11 +32,11 @@
       "name": "Actress in a Leading Role",
       "points": 1,
       "nominees": [
-        "Jessie Buckley",
-        "Rose Byrne",
-        "Kate Hudson",
-        "Renate Reinsve",
-        "Emma Stone"
+        "Jessie Buckley (Hamnet)",
+        "Rose Byrne (If I Had Legs I'd Kick You)",
+        "Kate Hudson (Song Sung Blue)",
+        "Renate Reinsve (Sentimental Value)",
+        "Emma Stone (Bugonia)"
       ]
     },
     {
@@ -44,11 +44,11 @@
       "name": "Actress in a Supporting Role",
       "points": 1,
       "nominees": [
-        "Elle Fanning",
-        "Inga Ibsdotter Lilleaas",
-        "Amy Madigan",
-        "Wunmi Mosaku",
-        "Teyana Taylor"
+        "Elle Fanning (Sentimental Value)",
+        "Inga Ibsdotter Lilleaas (Sentimental Value)",
+        "Amy Madigan (Weapons)",
+        "Wunmi Mosaku (Sinners)",
+        "Teyana Taylor (One Battle after Another)"
       ]
     },
     {
@@ -116,11 +116,11 @@
       "name": "Directing",
       "points": 1,
       "nominees": [
-        "Hamnet",
-        "Marty Supreme",
-        "One Battle after Another",
-        "Sentimental Value",
-        "Sinners"
+        "Hamnet (Chloé Zhao)",
+        "Marty Supreme (Josh Safdie)",
+        "One Battle after Another (Paul Thomas Anderson)",
+        "Sentimental Value (Joachim Trier)",
+        "Sinners (Ryan Coogler)"
       ]
     },
     {

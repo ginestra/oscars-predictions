@@ -29,6 +29,20 @@ function slugify(value) {
     .replace(/^_+|_+$/g, "");
 }
 
+const ACTING_CATEGORIES = new Set([
+  "actor in a leading role",
+  "actor in a supporting role",
+  "actress in a leading role",
+  "actress in a supporting role"
+]);
+
+const DIRECTING_CATEGORY = "directing";
+
+function shouldAppendDetail(categoryName) {
+  const normalized = categoryName.toLowerCase();
+  return ACTING_CATEGORIES.has(normalized) || normalized === DIRECTING_CATEGORY;
+}
+
 function getNomineeFromRow($row) {
   const preferredSelectors = [
     ".views-field-title",
@@ -54,6 +68,32 @@ function getNomineeFromRow($row) {
   return fallback.split("  ")[0].split("\n")[0].trim();
 }
 
+function getNomineeLinesFromRow($row) {
+  return $row
+    .text()
+    .split("\n")
+    .map((line) => normalizeWhitespace(line))
+    .filter(
+      (line) =>
+        line &&
+        line.toLowerCase() !== "nominees" &&
+        line.toLowerCase() !== "winner"
+    );
+}
+
+function formatNominee(categoryName, nominee, detail) {
+  if (!detail || detail === nominee) {
+    return nominee;
+  }
+  if (categoryName.toLowerCase().includes("international feature film")) {
+    return `${nominee} — ${detail}`;
+  }
+  if (shouldAppendDetail(categoryName)) {
+    return `${nominee} (${detail})`;
+  }
+  return nominee;
+}
+
 function extractWithViewGrouping($root) {
   const categories = [];
   $root.find(".view-grouping").each((_, group) => {
@@ -67,13 +107,16 @@ function extractWithViewGrouping($root) {
 
     const nominees = [];
     $group.find(".views-row").each((__, row) => {
-      const nominee = getNomineeFromRow($group.find(row));
+      const $row = $group.find(row);
+      const lines = getNomineeLinesFromRow($row);
+      const nominee = lines[0] || getNomineeFromRow($row);
+      const detail = lines[1] || "";
       if (
         nominee &&
         nominee.toLowerCase() !== "nominees" &&
         !nominee.toLowerCase().includes("nominees to be determined")
       ) {
-        nominees.push(nominee);
+        nominees.push(formatNominee(name, nominee, detail));
       }
     });
 
@@ -124,17 +167,13 @@ function parseNomineesFromText(rawText) {
         nominee !== "NOMINEES" &&
         !nominee.toLowerCase().includes("nominees to be determined")
       ) {
-        if (
-          categoryName.toLowerCase().includes("international feature film") &&
-          detail &&
-          !isCategoryLine(i + 1)
-        ) {
-          nominees.push(`${nominee} — ${detail}`);
+        if (detail && !isCategoryLine(i + 1)) {
+          nominees.push(formatNominee(categoryName, nominee, detail));
           i += 2;
           continue;
         }
 
-        nominees.push(nominee);
+        nominees.push(formatNominee(categoryName, nominee, ""));
       }
 
       if (detail && !isCategoryLine(i + 1)) {
