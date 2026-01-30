@@ -98,7 +98,9 @@ end;
 $$;
 
 -- Public view for leaderboard
-create or replace view public.leaderboard_picks as
+create or replace view public.leaderboard_picks
+with (security_invoker = true)
+as
 select u.username, p.picks_by_category
 from public.users u
 join public.picks p on p.user_id = u.id;
@@ -106,6 +108,19 @@ join public.picks p on p.user_id = u.id;
 -- RLS
 alter table public.users enable row level security;
 alter table public.picks enable row level security;
+
+-- Public read access for leaderboard data
+create policy "public leaderboard users"
+on public.users
+for select
+to anon
+using (true);
+
+create policy "public leaderboard picks"
+on public.picks
+for select
+to anon
+using (true);
 
 -- Allow read from leaderboard view
 grant select on public.leaderboard_picks to anon;
