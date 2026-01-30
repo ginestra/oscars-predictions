@@ -358,6 +358,12 @@ function setLanguage(lang) {
   memoryStore[STORAGE_KEYS.language] = currentLanguage;
 }
 
+function getBrowserLanguage() {
+  const preferred = navigator.language || navigator.languages?.[0] || "en";
+  const base = preferred.split("-")[0]?.toLowerCase() || "en";
+  return base === "it" ? "it" : "en";
+}
+
 function getSystemTheme() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
@@ -1305,11 +1311,16 @@ async function init() {
     const storedLang = localStorage.getItem(STORAGE_KEYS.language);
     if (storedLang) {
       currentLanguage = storedLang;
+    } else {
+      currentLanguage = getBrowserLanguage();
     }
   } catch (error) {
-    currentLanguage = "en";
+    currentLanguage = getBrowserLanguage();
   }
   memoryStore[STORAGE_KEYS.language] = currentLanguage;
+  if (elements.languageSelect) {
+    elements.languageSelect.value = currentLanguage;
+  }
   try {
     const storedTheme = localStorage.getItem(STORAGE_KEYS.theme);
     if (storedTheme) {
