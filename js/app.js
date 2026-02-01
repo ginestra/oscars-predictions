@@ -838,16 +838,14 @@ function renderSimilarityMatrix() {
 
   setStatus(elements.similarityStatus, "");
 
-  const headerRow = document.createElement("tr");
   const corner = document.createElement("th");
   corner.textContent = "";
-  headerRow.appendChild(corner);
+  elements.similarityHeader.appendChild(corner);
   users.forEach((user) => {
     const th = document.createElement("th");
     th.textContent = user;
-    headerRow.appendChild(th);
+    elements.similarityHeader.appendChild(th);
   });
-  elements.similarityHeader.appendChild(headerRow);
 
   const pickMap = rows.reduce((acc, row) => {
     acc[row.username] = row.picks_by_category || {};
