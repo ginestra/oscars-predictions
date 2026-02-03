@@ -100,7 +100,9 @@ const elements = {
   similarityBody: document.querySelector("#similarity-body"),
   similarityStatus: document.querySelector("#similarity-status"),
   themeSelect: document.querySelector("#theme-select"),
-  languageSelect: document.querySelector("#language-select")
+  languageSelect: document.querySelector("#language-select"),
+  similarityExpandButton: document.querySelector("#similarity-expand"),
+  similarityOverlay: document.querySelector("#similarity-overlay")
 };
 
 const translations = {
@@ -168,6 +170,8 @@ const translations = {
     similaritySubtitle: "Compare how similar users are based on matching picks.",
     similarityCaption: "Similarity matrix of user picks",
     similarityEmpty: "Not enough data to compare users.",
+    similarityExpandLabel: "Expand similarity table",
+    similarityCollapseLabel: "Collapse similarity table",
     themeLabel: "Theme",
     themeSystem: "◐ System",
     themeLight: "○ Light",
@@ -272,6 +276,8 @@ const translations = {
     similaritySubtitle: "Confronta la somiglianza tra utenti in base ai pronostici.",
     similarityCaption: "Matrice di somiglianza dei pronostici",
     similarityEmpty: "Dati insufficienti per confrontare gli utenti.",
+    similarityExpandLabel: "Espandi tabella somiglianza",
+    similarityCollapseLabel: "Comprimi tabella somiglianza",
     themeLabel: "Tema",
     themeSystem: "◐ Sistema",
     themeLight: "○ Chiaro",
@@ -312,6 +318,19 @@ const translations = {
     cleared: "Tutti i dati locali sono stati cancellati.",
     loadFailed: "Impossibile caricare le categorie. Controlla data/categories.json."
   }
+};
+
+const similarityIcons = {
+  expand: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false">
+      <path d="M408 64L552 64C565.3 64 576 74.7 576 88L576 232C576 241.7 570.2 250.5 561.2 254.2C552.2 257.9 541.9 255.9 535 249L496 210L409 297C399.6 306.4 384.4 306.4 375.1 297L343.1 265C333.7 255.6 333.7 240.4 343.1 231.1L430.1 144.1L391.1 105.1C384.2 98.2 382.2 87.9 385.9 78.9C389.6 69.9 398.3 64 408 64zM232 576L88 576C74.7 576 64 565.3 64 552L64 408C64 398.3 69.8 389.5 78.8 385.8C87.8 382.1 98.1 384.2 105 391L144 430L231 343C240.4 333.6 255.6 333.6 264.9 343L296.9 375C306.3 384.4 306.3 399.6 296.9 408.9L209.9 495.9L248.9 534.9C255.8 541.8 257.8 552.1 254.1 561.1C250.4 570.1 241.7 576 232 576z"/>
+    </svg>
+  `,
+  collapse: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false">
+      <path d="M503.5 71C512.9 61.6 528.1 61.6 537.4 71L569.4 103C578.8 112.4 578.8 127.6 569.4 136.9L482.4 223.9L521.4 262.9C528.3 269.8 530.3 280.1 526.6 289.1C522.9 298.1 514.2 304 504.5 304L360.5 304C347.2 304 336.5 293.3 336.5 280L336.5 136C336.5 126.3 342.3 117.5 351.3 113.8C360.3 110.1 370.6 112.1 377.5 119L416.5 158L503.5 71zM136.5 336L280.5 336C293.8 336 304.5 346.7 304.5 360L304.5 504C304.5 513.7 298.7 522.5 289.7 526.2C280.7 529.9 270.4 527.9 263.5 521L224.5 482L137.5 569C128.1 578.4 112.9 578.4 103.6 569L71.6 537C62.2 527.6 62.2 512.4 71.6 503.1L158.6 416.1L119.6 377.1C112.7 370.2 110.7 359.9 114.4 350.9C118.1 341.9 126.8 336 136.5 336z"/>
+    </svg>
+  `
 };
 
 const categoryLabels = {
@@ -418,6 +437,71 @@ function applyTranslations() {
   }
   if (elements.themeSelect) {
     elements.themeSelect.value = currentTheme;
+  }
+  syncSimilarityButtonState();
+}
+
+function syncSimilarityButtonState() {
+  if (!elements.similarityExpandButton) {
+    return;
+  }
+  const isExpanded = elements.similarityOverlay?.classList.contains("is-active");
+  setSimilarityButtonState(Boolean(isExpanded));
+}
+
+function setSimilarityButtonState(isExpanded) {
+  if (!elements.similarityExpandButton) {
+    return;
+  }
+  elements.similarityExpandButton.innerHTML = isExpanded
+    ? similarityIcons.collapse
+    : similarityIcons.expand;
+  elements.similarityExpandButton.setAttribute(
+    "aria-expanded",
+    isExpanded ? "true" : "false"
+  );
+  elements.similarityExpandButton.setAttribute(
+    "aria-label",
+    isExpanded ? t("similarityCollapseLabel") : t("similarityExpandLabel")
+  );
+}
+
+function openSimilarityModal() {
+  if (!elements.similarityExpandButton || !elements.similarityOverlay) {
+    return;
+  }
+  setSimilarityButtonState(true);
+  elements.similarityOverlay.classList.add("is-active");
+  elements.similarityOverlay.setAttribute("aria-hidden", "false");
+  const card = elements.similarityOverlay.previousElementSibling;
+  if (card) {
+    card.classList.add("is-expanded");
+  }
+  document.body.classList.add("modal-open");
+}
+
+function closeSimilarityModal() {
+  if (!elements.similarityExpandButton || !elements.similarityOverlay) {
+    return;
+  }
+  setSimilarityButtonState(false);
+  elements.similarityOverlay.classList.remove("is-active");
+  elements.similarityOverlay.setAttribute("aria-hidden", "true");
+  const card = elements.similarityOverlay.previousElementSibling;
+  if (card) {
+    card.classList.remove("is-expanded");
+  }
+  document.body.classList.remove("modal-open");
+}
+
+function toggleSimilarityModal() {
+  if (!elements.similarityOverlay) {
+    return;
+  }
+  if (elements.similarityOverlay.classList.contains("is-active")) {
+    closeSimilarityModal();
+  } else {
+    openSimilarityModal();
   }
 }
 
@@ -827,7 +911,9 @@ function renderSimilarityMatrix() {
     return;
   }
   const rows = state.picks || [];
-  const users = rows.map((row) => row.username).sort();
+  const users = rows
+    .map((row) => row.username)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   elements.similarityHeader.innerHTML = "";
   elements.similarityBody.innerHTML = "";
 
@@ -1387,6 +1473,17 @@ async function init() {
       handleLanguageChange(event.target.value);
     });
   }
+  syncSimilarityButtonState();
+  if (elements.similarityExpandButton) {
+    elements.similarityExpandButton.addEventListener("click", () => {
+      toggleSimilarityModal();
+    });
+  }
+  if (elements.similarityOverlay) {
+    elements.similarityOverlay.addEventListener("click", () => {
+      closeSimilarityModal();
+    });
+  }
   if (elements.themeSelect) {
     elements.themeSelect.addEventListener("change", (event) => {
       applyTheme(event.target.value);
@@ -1398,6 +1495,11 @@ async function init() {
     }
     if (event.target && event.target.id === "theme-select") {
       applyTheme(event.target.value);
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeSimilarityModal();
     }
   });
 }
