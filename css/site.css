@@ -197,11 +197,16 @@ html[data-theme="dark"] .eyebrow-icon svg {
   gap: 1.5rem;
 }
 
+.main-grid > div {
+  min-width: 0;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
+  min-width: 0;
 }
 
 .card-header {
@@ -415,6 +420,8 @@ button.danger {
 
 .table-wrap {
   overflow-x: auto;
+  max-width: 100%;
+  min-width: 0;
 }
 
 table {
