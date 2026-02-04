@@ -91,10 +91,21 @@ const elements = {
   picksForm: document.querySelector("#picks-form"),
   picksContainer: document.querySelector("#picks-container"),
   picksStatus: document.querySelector("#picks-status"),
+  picksResults: document.querySelector("#picks-results"),
+  picksResultsUpdated: document.querySelector("#picks-results-updated"),
+  picksTitle: document.querySelector("#picks-title"),
+  picksSubtitle: document.querySelector('[data-i18n="picksSubtitle"]'),
+  picksDeadline: document.querySelector('[data-i18n="picksDeadline"]'),
   resultsForm: document.querySelector("#results-form"),
   resultsStatus: document.querySelector("#results-status"),
+  resultsContainer: document.querySelector("#results-container"),
+  resultsUpdated: document.querySelector("#results-updated"),
+  resultsSection: document.querySelector("#results-title")?.closest("section"),
   leaderboardBody: document.querySelector("#leaderboard-body"),
   leaderboardStatus: document.querySelector("#leaderboard-status"),
+  leaderboardExpandButton: document.querySelector("#leaderboard-expand"),
+  leaderboardOverlay: document.querySelector("#leaderboard-overlay"),
+  leaderboardSection: document.querySelector("#leaderboard-card"),
   similarityTable: document.querySelector("#similarity-table"),
   similarityHeader: document.querySelector("#similarity-header"),
   similarityBody: document.querySelector("#similarity-body"),
@@ -166,10 +177,18 @@ const translations = {
     leaderboardEmpty: "No results yet.",
     leaderboardNoPicks: "No picks saved yet.",
     leaderboardUpdated: "Leaderboard updated.",
+    leaderboardExpandLabel: "Expand leaderboard table",
+    leaderboardCollapseLabel: "Collapse leaderboard table",
+    picksClosedTitle: "Voting closed - Results",
+    picksClosedSubtitle: "Results are updated as winners are announced.",
     similarityTitle: "Vote similarity",
     similaritySubtitle: "Compare how similar users are based on matching picks.",
     similarityCaption: "Similarity matrix of user picks",
     similarityEmpty: "Not enough data to compare users.",
+    resultsLastUpdated: "Last updated",
+    pickCorrectLabel: "Correct pick",
+    pickWrongLabel: "Wrong pick",
+    winnerLabel: "Winner",
     similarityExpandLabel: "Expand similarity table",
     similarityCollapseLabel: "Collapse similarity table",
     themeLabel: "Theme",
@@ -272,10 +291,18 @@ const translations = {
     leaderboardEmpty: "Nessun risultato ancora.",
     leaderboardNoPicks: "Nessun pronostico salvato.",
     leaderboardUpdated: "Classifica aggiornata.",
+    leaderboardExpandLabel: "Espandi tabella classifica",
+    leaderboardCollapseLabel: "Comprimi tabella classifica",
+    picksClosedTitle: "Votazioni chiuse - Risultati",
+    picksClosedSubtitle: "I risultati si aggiornano man mano che vengono annunciati.",
     similarityTitle: "Somiglianza voti",
     similaritySubtitle: "Confronta la somiglianza tra utenti in base ai pronostici.",
     similarityCaption: "Matrice di somiglianza dei pronostici",
     similarityEmpty: "Dati insufficienti per confrontare gli utenti.",
+    resultsLastUpdated: "Ultimo aggiornamento",
+    pickCorrectLabel: "Pronostico corretto",
+    pickWrongLabel: "Pronostico errato",
+    winnerLabel: "Vincitore",
     similarityExpandLabel: "Espandi tabella somiglianza",
     similarityCollapseLabel: "Comprimi tabella somiglianza",
     themeLabel: "Tema",
@@ -332,6 +359,14 @@ const similarityIcons = {
     </svg>
   `
 };
+
+const trophyIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false">
+    <path d="M208.3 64L432.3 64C458.8 64 480.4 85.8 479.4 112.2C479.2 117.5 479 122.8 478.7 128L528.3 128C554.4 128 577.4 149.6 575.4 177.8C567.9 281.5 514.9 338.5 457.4 368.3C441.6 376.5 425.5 382.6 410.2 387.1C390 415.7 369 430.8 352.3 438.9L352.3 512L416.3 512C434 512 448.3 526.3 448.3 544C448.3 561.7 434 576 416.3 576L224.3 576C206.6 576 192.3 561.7 192.3 544C192.3 526.3 206.6 512 224.3 512L288.3 512L288.3 438.9C272.3 431.2 252.4 416.9 233 390.6C214.6 385.8 194.6 378.5 175.1 367.5C121 337.2 72.2 280.1 65.2 177.6C63.3 149.5 86.2 127.9 112.3 127.9L161.9 127.9C161.6 122.7 161.4 117.5 161.2 112.1C160.2 85.6 181.8 63.9 208.3 63.9zM165.5 176L113.1 176C119.3 260.7 158.2 303.1 198.3 325.6C183.9 288.3 172 239.6 165.5 176zM444 320.8C484.5 297 521.1 254.7 527.3 176L475 176C468.8 236.9 457.6 284.2 444 320.8z"/>
+  </svg>
+`;
+
+let lastResultsUpdatedAt = null;
 
 const categoryLabels = {
   it: {
@@ -439,6 +474,40 @@ function applyTranslations() {
     elements.themeSelect.value = currentTheme;
   }
   syncSimilarityButtonState();
+  syncLeaderboardButtonState();
+  updateResultsUpdatedLabels();
+}
+
+function getResultsLocale() {
+  return getLanguage() === "it" ? "it-IT" : "en-US";
+}
+
+function formatLastUpdated(date) {
+  if (!date) {
+    return "";
+  }
+  return new Intl.DateTimeFormat(getResultsLocale(), {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
+function updateResultsUpdatedLabels() {
+  const formatted = formatLastUpdated(lastResultsUpdatedAt);
+  const message = formatted ? `${t("resultsLastUpdated")}: ${formatted}` : "";
+  if (elements.resultsUpdated) {
+    elements.resultsUpdated.textContent = message;
+    elements.resultsUpdated.hidden = !formatted;
+  }
+  if (elements.picksResultsUpdated) {
+    elements.picksResultsUpdated.textContent = message;
+    elements.picksResultsUpdated.hidden = !formatted;
+  }
+}
+
+function markResultsUpdated() {
+  lastResultsUpdatedAt = new Date();
+  updateResultsUpdatedLabels();
 }
 
 function syncSimilarityButtonState() {
@@ -505,6 +574,68 @@ function toggleSimilarityModal() {
   }
 }
 
+function syncLeaderboardButtonState() {
+  if (!elements.leaderboardExpandButton) {
+    return;
+  }
+  const isExpanded = elements.leaderboardOverlay?.classList.contains("is-active");
+  setLeaderboardButtonState(Boolean(isExpanded));
+}
+
+function setLeaderboardButtonState(isExpanded) {
+  if (!elements.leaderboardExpandButton) {
+    return;
+  }
+  elements.leaderboardExpandButton.innerHTML = isExpanded
+    ? similarityIcons.collapse
+    : similarityIcons.expand;
+  elements.leaderboardExpandButton.setAttribute(
+    "aria-expanded",
+    isExpanded ? "true" : "false"
+  );
+  elements.leaderboardExpandButton.setAttribute(
+    "aria-label",
+    isExpanded ? t("leaderboardCollapseLabel") : t("leaderboardExpandLabel")
+  );
+}
+
+function openLeaderboardModal() {
+  if (!elements.leaderboardExpandButton || !elements.leaderboardOverlay) {
+    return;
+  }
+  setLeaderboardButtonState(true);
+  elements.leaderboardOverlay.classList.add("is-active");
+  elements.leaderboardOverlay.setAttribute("aria-hidden", "false");
+  if (elements.leaderboardSection) {
+    elements.leaderboardSection.classList.add("is-expanded");
+  }
+  document.body.classList.add("modal-open");
+}
+
+function closeLeaderboardModal() {
+  if (!elements.leaderboardExpandButton || !elements.leaderboardOverlay) {
+    return;
+  }
+  setLeaderboardButtonState(false);
+  elements.leaderboardOverlay.classList.remove("is-active");
+  elements.leaderboardOverlay.setAttribute("aria-hidden", "true");
+  if (elements.leaderboardSection) {
+    elements.leaderboardSection.classList.remove("is-expanded");
+  }
+  document.body.classList.remove("modal-open");
+}
+
+function toggleLeaderboardModal() {
+  if (!elements.leaderboardOverlay) {
+    return;
+  }
+  if (elements.leaderboardOverlay.classList.contains("is-active")) {
+    closeLeaderboardModal();
+  } else {
+    openLeaderboardModal();
+  }
+}
+
 function readJSON(key, fallback) {
   let raw = null;
   try {
@@ -547,6 +678,64 @@ function normalizePin(value) {
 
 function isValidPin(value) {
   return /^\d{4,6}$/.test(value);
+}
+
+function normalizeNomineeName(value) {
+  return value
+    ? value
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+    : "";
+}
+
+function normalizeWhitespace(text) {
+  return text ? text.replace(/\s+/g, " ").trim() : "";
+}
+
+function decodeEntities(text) {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+const ACTING_CATEGORIES = new Set([
+  "actor in a leading role",
+  "actor in a supporting role",
+  "actress in a leading role",
+  "actress in a supporting role"
+]);
+
+const DIRECTING_CATEGORY = "directing";
+
+function shouldAppendDetail(categoryName) {
+  const normalized = categoryName.toLowerCase();
+  return ACTING_CATEGORIES.has(normalized) || normalized === DIRECTING_CATEGORY;
+}
+
+function formatNomineeLabel(categoryName, nominee, detail) {
+  if (!detail || detail === nominee) {
+    return nominee;
+  }
+  if (categoryName.toLowerCase().includes("international feature film")) {
+    return `${nominee} — ${detail}`;
+  }
+  if (shouldAppendDetail(categoryName)) {
+    return `${nominee} (${detail})`;
+  }
+  return nominee;
+}
+
+function stripNomineeDetail(value) {
+  if (!value) {
+    return "";
+  }
+  return value.replace(/\s*[\u2014-]\s*.+$/, "").replace(/\s*\(.+\)\s*$/, "");
 }
 
 function getUsers() {
@@ -678,13 +867,17 @@ function highlightMissingPicks() {
 
 function renderCategories() {
   const currentUser = getCurrentUser();
-  const userPicks = state.picks.find((entry) => entry.username === currentUser);
-  const localPicks = getPicks();
-  const localUserPicks = localPicks.find(
-    (entry) => entry.username === currentUser
-  );
-  const picksByCategoryId =
-    userPicks?.picks_by_category || localUserPicks?.picksByCategoryId || {};
+  const hasSession = Boolean(currentUser && sessionPin);
+  const userPicks = hasSession
+    ? state.picks.find((entry) => entry.username === currentUser)
+    : null;
+  const localPicks = hasSession ? getPicks() : [];
+  const localUserPicks = hasSession
+    ? localPicks.find((entry) => entry.username === currentUser)
+    : null;
+  const picksByCategoryId = hasSession
+    ? userPicks?.picks_by_category || localUserPicks?.picksByCategoryId || {}
+    : {};
 
   elements.picksContainer.innerHTML = "";
 
@@ -696,6 +889,143 @@ function renderCategories() {
 
   setFormEnabled(elements.picksForm, Boolean(currentUser));
   highlightMissingPicks();
+}
+
+function renderNomineesList(container) {
+  if (!container) {
+    return;
+  }
+  container.innerHTML = "";
+  if (!state.categories.length) {
+    return;
+  }
+  const results = getResults();
+  const hasWinners =
+    results &&
+    results.winnersByCategoryId &&
+    Object.keys(results.winnersByCategoryId).length > 0 &&
+    results.ceremonyYear &&
+    results.ceremonyYear === state.ceremonyYear;
+  const winners = hasWinners ? results.winnersByCategoryId : {};
+  const currentUser = getCurrentUser();
+  const hasSession = Boolean(currentUser && sessionPin);
+  const userPicks = hasSession
+    ? state.picks.find((entry) => entry.username === currentUser)
+    : null;
+  const localPicks = hasSession ? getPicks() : [];
+  const localUserPicks = hasSession
+    ? localPicks.find((entry) => entry.username === currentUser)
+    : null;
+  const picksByCategoryId = hasSession
+    ? userPicks?.picks_by_category || localUserPicks?.picksByCategoryId || {}
+    : {};
+
+  state.categories.forEach((category) => {
+    const group = document.createElement("div");
+    group.className = "nominee-group";
+
+    const title = document.createElement("p");
+    title.className = "nominee-title";
+    title.textContent = getCategoryLabel(category);
+    group.appendChild(title);
+
+    const list = document.createElement("ul");
+    list.className = "nominees-list";
+
+    const winner = winners[category.id];
+    const normalizedWinner = normalizeNomineeName(winner);
+    const normalizedWinnerFallback = normalizeNomineeName(
+      stripNomineeDetail(winner)
+    );
+    const userPick = picksByCategoryId[category.id];
+    const normalizedPick = normalizeNomineeName(userPick);
+
+    category.nominees.forEach((nominee) => {
+      const li = document.createElement("li");
+      const normalizedNominee = normalizeNomineeName(nominee);
+      const isWinner =
+        (normalizedWinner && normalizedNominee === normalizedWinner) ||
+        (normalizedWinnerFallback &&
+          normalizedNominee === normalizedWinnerFallback);
+      const isUserPick = normalizedPick && normalizedNominee === normalizedPick;
+      if (isWinner) {
+        li.classList.add("is-winner");
+        li.setAttribute("aria-label", `${nominee} - ${t("winnerLabel")}`);
+        const icon = document.createElement("span");
+        icon.className = "winner-icon";
+        icon.innerHTML = trophyIcon;
+        li.appendChild(icon);
+      }
+      const name = document.createElement("span");
+      name.className = "nominee-name";
+      name.textContent = nominee;
+      li.appendChild(name);
+
+      if (isWinner) {
+        const badge = document.createElement("span");
+        badge.className = "winner-tag";
+        badge.textContent = t("winnerLabel");
+        li.appendChild(badge);
+      }
+
+      if (hasSession && normalizedWinner && isUserPick) {
+        const pickBadge = document.createElement("span");
+        const isCorrect = isWinner;
+        pickBadge.className = `pick-result ${isCorrect ? "is-correct" : "is-wrong"}`;
+        pickBadge.textContent = isCorrect ? "✓" : "✕";
+        pickBadge.setAttribute(
+          "aria-label",
+          isCorrect ? t("pickCorrectLabel") : t("pickWrongLabel")
+        );
+        li.appendChild(pickBadge);
+        if (!isCorrect) {
+          li.classList.add("is-wrong-pick");
+        }
+      }
+
+      list.appendChild(li);
+    });
+
+    group.appendChild(list);
+    container.appendChild(group);
+  });
+}
+
+function updatePicksPanel() {
+  const votingOpen = isVotingOpen();
+  if (elements.picksTitle) {
+    elements.picksTitle.textContent = votingOpen
+      ? t("picksTitle")
+      : t("picksClosedTitle");
+  }
+  if (elements.picksSubtitle) {
+    elements.picksSubtitle.textContent = votingOpen
+      ? t("picksSubtitle")
+      : t("picksClosedSubtitle");
+  }
+  if (elements.picksDeadline) {
+    elements.picksDeadline.hidden = !votingOpen;
+    if (votingOpen) {
+      elements.picksDeadline.textContent = t("picksDeadline");
+    }
+  }
+  if (elements.picksForm) {
+    elements.picksForm.hidden = !votingOpen;
+  }
+  if (elements.picksResults) {
+    elements.picksResults.hidden = votingOpen;
+    if (!votingOpen) {
+      renderNomineesList(elements.picksResults);
+    } else {
+      elements.picksResults.innerHTML = "";
+    }
+  }
+  if (elements.picksResultsUpdated) {
+    elements.picksResultsUpdated.hidden = votingOpen || !lastResultsUpdatedAt;
+  }
+  if (elements.resultsSection) {
+    elements.resultsSection.hidden = !votingOpen;
+  }
 }
 
 function renderCurrentUser() {
@@ -749,6 +1079,7 @@ function applyDeadlineState() {
   if (elements.updateUsernameForm) {
     setFormEnabled(elements.updateUsernameForm, !usernameLocked);
   }
+  updatePicksPanel();
 }
 
 function saveUser(username, pin, userId) {
@@ -778,6 +1109,8 @@ function saveResults(winnersByCategoryId) {
     finalizedAt: new Date().toISOString(),
     ceremonyYear: state.ceremonyYear
   });
+  renderResults();
+  updatePicksPanel();
 }
 
 function renderResultsStatus() {
@@ -795,6 +1128,20 @@ function renderResultsStatus() {
     elements.resultsStatus,
     hasWinners ? t("resultsUpdated") : t("resultsUnavailable")
   );
+  renderResults();
+}
+
+function renderResults() {
+  if (elements.resultsContainer) {
+    elements.resultsContainer.hidden = true;
+    elements.resultsContainer.innerHTML = "";
+  }
+  if (elements.resultsSection) {
+    elements.resultsSection.hidden = !isVotingOpen();
+  }
+  if (elements.resultsUpdated) {
+    elements.resultsUpdated.hidden = !isVotingOpen() || !lastResultsUpdatedAt;
+  }
 }
 
 function calculateScores() {
@@ -1248,6 +1595,7 @@ async function fetchWinnersFromOscars() {
   if (!elements.resultsStatus || !state.ceremonyYear) {
     return;
   }
+  markResultsUpdated();
   setStatus(elements.resultsStatus, t("resultsLoading"));
   const url = `https://r.jina.ai/http://www.oscars.org/oscars/ceremonies/${state.ceremonyYear}`;
   try {
@@ -1265,6 +1613,8 @@ async function fetchWinnersFromOscars() {
     saveResults(winnersByCategoryId);
     setStatus(elements.resultsStatus, t("resultsUpdated"));
     renderLeaderboard();
+    renderResults();
+    updatePicksPanel();
   } catch (error) {
     setStatus(elements.resultsStatus, t("resultsUnavailable"));
   }
@@ -1287,7 +1637,7 @@ function scheduleResultsPolling() {
 function parseWinnersFromText(rawText) {
   const lines = rawText
     .split("\n")
-    .map((line) => line.replace(/\s+/g, " ").trim())
+    .map((line) => decodeEntities(normalizeWhitespace(line)))
     .filter(Boolean);
 
   const winnersByCategoryId = {};
@@ -1295,6 +1645,12 @@ function parseWinnersFromText(rawText) {
     Boolean(lines[index]) &&
     lines[index] !== "Winner" &&
     lines[index + 1] === "Winner";
+  const isDetailLine = (index) =>
+    Boolean(lines[index]) &&
+    lines[index] !== "Winner" &&
+    lines[index] !== "Nominees" &&
+    lines[index] !== "NOMINEES" &&
+    !isCategoryLine(index);
 
   for (let i = 0; i < lines.length - 2; i += 1) {
     if (!isCategoryLine(i)) {
@@ -1302,11 +1658,17 @@ function parseWinnersFromText(rawText) {
     }
     const categoryName = lines[i];
     const winnerName = lines[i + 2];
+    const detailCandidate = lines[i + 3] || "";
+    const detail = isDetailLine(i + 3) ? detailCandidate : "";
     const category = state.categories.find(
       (entry) => entry.name === categoryName
     );
     if (category && winnerName) {
-      winnersByCategoryId[category.id] = winnerName;
+      winnersByCategoryId[category.id] = formatNomineeLabel(
+        categoryName,
+        winnerName,
+        detail
+      );
     }
   }
 
@@ -1388,6 +1750,7 @@ async function handleLanguageChange(value) {
   await fetchLeaderboardPicks();
   renderLeaderboard();
   applyDeadlineState();
+  renderResults();
 }
 
 async function init() {
@@ -1435,6 +1798,8 @@ async function init() {
   await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
+  updatePicksPanel();
+  renderResults();
   await fetchLeaderboardPicks();
   renderLeaderboard();
   applyDeadlineState();
@@ -1474,6 +1839,17 @@ async function init() {
     });
   }
   syncSimilarityButtonState();
+  syncLeaderboardButtonState();
+  if (elements.leaderboardExpandButton) {
+    elements.leaderboardExpandButton.addEventListener("click", () => {
+      toggleLeaderboardModal();
+    });
+  }
+  if (elements.leaderboardOverlay) {
+    elements.leaderboardOverlay.addEventListener("click", () => {
+      closeLeaderboardModal();
+    });
+  }
   if (elements.similarityExpandButton) {
     elements.similarityExpandButton.addEventListener("click", () => {
       toggleSimilarityModal();
@@ -1500,6 +1876,7 @@ async function init() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeSimilarityModal();
+      closeLeaderboardModal();
     }
   });
 }

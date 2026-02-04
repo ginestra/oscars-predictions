@@ -212,13 +212,25 @@
               <div id="picks-container" class="stack"></div>
               <button type="submit" data-i18n="savePicks">Save picks</button>
             </form>
+            <p id="picks-results-updated" class="muted" hidden></p>
+            <div id="picks-results" class="stack" hidden></div>
             <p id="picks-status" class="status" aria-live="polite" role="status"></p>
           </section>
         </div>
 
         <div class="stack">
-          <section aria-labelledby="leaderboard-title" class="card stack">
-            <h2 id="leaderboard-title" data-i18n="leaderboardTitle">Leaderboard</h2>
+          <section aria-labelledby="leaderboard-title" class="card stack expandable-card" id="leaderboard-card">
+            <div class="card-header">
+              <h2 id="leaderboard-title" data-i18n="leaderboardTitle">Leaderboard</h2>
+              <button
+                class="icon-button"
+                type="button"
+                id="leaderboard-expand"
+                aria-label="Expand leaderboard table"
+                aria-expanded="false"
+              >
+              </button>
+            </div>
             <div class="table-wrap">
               <table class="leaderboard">
                 <caption class="visually-hidden" data-i18n="leaderboardCaption">Leaderboard with total points</caption>
@@ -240,8 +252,9 @@
             </div>
             <p id="leaderboard-status" class="status" aria-live="polite" role="status"></p>
           </section>
+          <div class="modal-overlay" id="leaderboard-overlay" aria-hidden="true"></div>
 
-          <section aria-labelledby="similarity-title" class="card stack similarity-card">
+          <section aria-labelledby="similarity-title" class="card stack expandable-card similarity-card">
             <div class="card-header">
               <h2 id="similarity-title" data-i18n="similarityTitle">Vote similarity</h2>
               <button
@@ -276,6 +289,8 @@
             <p class="muted" data-i18n="resultsSubtitle">
               Winners are fetched automatically when the Oscars site updates.
             </p>
+            <p id="results-updated" class="muted" hidden></p>
+            <div id="results-container" class="stack" hidden></div>
             <p id="results-status" class="status" aria-live="polite" role="status"></p>
           </section>
 
