@@ -9,12 +9,15 @@
   --bg: #e2e8dd;
   --card: #ffffff;
   --text: #582c4d;
-  --muted: #697268;
+  --muted: #4d5a53;
   --border: #95a3a4;
   --accent: #a26769;
   --accent-dark: #582c4d;
   --danger: #a26769;
   --focus: #582c4d;
+  --button-bg: #5a2f36;
+  --button-bg-hover: #4a252b;
+  --button-text: #f7f1ee;
   --sans: "Source Sans 3", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --serif: "Source Serif 4", "Times New Roman", Times, serif;
   --radius: 4px;
@@ -32,6 +35,9 @@ html[data-theme="dark"] {
   --accent-dark: #e0b5ac;
   --danger: #c07c6f;
   --focus: #f0e9e4;
+  --button-bg: #d2a79b;
+  --button-bg-hover: #c59689;
+  --button-text: #2b1915;
   --select-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f0e9e4' d='M6 8 0 2.2 1.4.8 6 5.4 10.6.8 12 2.2z'/%3E%3C/svg%3E");
 }
 
@@ -346,8 +352,8 @@ select {
 button,
 .file-button {
   border: none;
-  background: var(--accent);
-  color: #fff;
+  background: var(--button-bg);
+  color: var(--button-text);
   padding: 0.7rem 1.1rem;
   border-radius: var(--radius);
   font-weight: 600;
@@ -360,7 +366,7 @@ button,
 
 button:hover,
 .file-button:hover {
-  background: var(--accent-dark);
+  background: var(--button-bg-hover);
 }
 
 button:focus-visible,
