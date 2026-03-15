@@ -294,6 +294,11 @@ html[data-theme="dark"] .eyebrow-icon svg {
   color: #ffffff;
 }
 
+.pick-result.is-pending {
+  background: var(--muted);
+  color: var(--bg);
+}
+
 #picks-results-updated {
   margin-top: 1rem;
 }

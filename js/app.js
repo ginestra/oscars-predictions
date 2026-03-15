@@ -188,6 +188,7 @@ const translations = {
     resultsLastUpdated: "Last updated",
     pickCorrectLabel: "Correct pick",
     pickWrongLabel: "Wrong pick",
+    pickLabel: "Your pick",
     winnerLabel: "Winner",
     similarityExpandLabel: "Expand similarity table",
     similarityCollapseLabel: "Collapse similarity table",
@@ -302,6 +303,7 @@ const translations = {
     resultsLastUpdated: "Ultimo aggiornamento",
     pickCorrectLabel: "Pronostico corretto",
     pickWrongLabel: "Pronostico errato",
+    pickLabel: "Il tuo pronostico",
     winnerLabel: "Vincitore",
     similarityExpandLabel: "Espandi tabella somiglianza",
     similarityCollapseLabel: "Comprimi tabella somiglianza",
@@ -976,17 +978,19 @@ function renderNomineesList(container) {
         li.appendChild(badge);
       }
 
-      if (hasSession && normalizedWinner && isUserPick) {
+      if (hasSession && isUserPick) {
         const pickBadge = document.createElement("span");
-        const isCorrect = isWinner;
-        pickBadge.className = `pick-result ${isCorrect ? "is-correct" : "is-wrong"}`;
-        pickBadge.textContent = isCorrect ? "✓" : "✕";
+        const hasWinner = Boolean(normalizedWinner);
+        const isCorrect = hasWinner && isWinner;
+        const isWrong = hasWinner && !isWinner;
+        pickBadge.className = `pick-result ${isCorrect ? "is-correct" : isWrong ? "is-wrong" : "is-pending"}`;
+        pickBadge.textContent = isCorrect ? "✓" : isWrong ? "✕" : "●";
         pickBadge.setAttribute(
           "aria-label",
-          isCorrect ? t("pickCorrectLabel") : t("pickWrongLabel")
+          isCorrect ? t("pickCorrectLabel") : isWrong ? t("pickWrongLabel") : t("pickLabel")
         );
         li.appendChild(pickBadge);
-        if (!isCorrect) {
+        if (isWrong) {
           li.classList.add("is-wrong-pick");
         }
       }
