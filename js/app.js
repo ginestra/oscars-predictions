@@ -869,11 +869,15 @@ function renderCategories() {
   const currentUser = getCurrentUser();
   const hasSession = Boolean(currentUser && sessionPin);
   const userPicks = hasSession
-    ? state.picks.find((entry) => entry.username === currentUser)
+    ? state.picks.find(
+        (entry) => entry.username.toLowerCase() === currentUser.toLowerCase()
+      )
     : null;
   const localPicks = hasSession ? getPicks() : [];
   const localUserPicks = hasSession
-    ? localPicks.find((entry) => entry.username === currentUser)
+    ? localPicks.find(
+        (entry) => entry.username.toLowerCase() === currentUser.toLowerCase()
+      )
     : null;
   const picksByCategoryId = hasSession
     ? userPicks?.picks_by_category || localUserPicks?.picksByCategoryId || {}
@@ -910,11 +914,15 @@ function renderNomineesList(container) {
   const currentUser = getCurrentUser();
   const hasSession = Boolean(currentUser && sessionPin);
   const userPicks = hasSession
-    ? state.picks.find((entry) => entry.username === currentUser)
+    ? state.picks.find(
+        (entry) => entry.username.toLowerCase() === currentUser.toLowerCase()
+      )
     : null;
   const localPicks = hasSession ? getPicks() : [];
   const localUserPicks = hasSession
-    ? localPicks.find((entry) => entry.username === currentUser)
+    ? localPicks.find(
+        (entry) => entry.username.toLowerCase() === currentUser.toLowerCase()
+      )
     : null;
   const picksByCategoryId = hasSession
     ? userPicks?.picks_by_category || localUserPicks?.picksByCategoryId || {}
@@ -1555,6 +1563,8 @@ async function applyUserFromUrl() {
   if (!isValidPin(pin)) {
     return;
   }
+  setCurrentUser(username);
+  sessionPin = pin;
   await loginWithSupabase(username, pin, false);
 }
 
@@ -1798,9 +1808,9 @@ async function init() {
   await applyUserFromUrl();
   renderCurrentUser();
   renderCategories();
+  await fetchLeaderboardPicks();
   updatePicksPanel();
   renderResults();
-  await fetchLeaderboardPicks();
   renderLeaderboard();
   applyDeadlineState();
 
