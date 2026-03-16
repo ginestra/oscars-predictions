@@ -1605,6 +1605,42 @@ function handlePicksSubmit(event) {
   savePicksWithSupabase(picksByCategoryId, missing);
 }
 
+async function loadResultsFromFile() {
+  if (!state.ceremonyYear) {
+    return;
+  }
+  try {
+    const response = await fetch("data/results.json");
+    if (!response.ok) {
+      return;
+    }
+    const data = await response.json();
+    const hasWinners =
+      data &&
+      data.winnersByCategoryId &&
+      Object.keys(data.winnersByCategoryId).length > 0 &&
+      data.ceremonyYear === state.ceremonyYear;
+    if (!hasWinners) {
+      return;
+    }
+    writeJSON(STORAGE_KEYS.results, {
+      winnersByCategoryId: data.winnersByCategoryId,
+      finalizedAt: data.finalizedAt || new Date().toISOString(),
+      ceremonyYear: data.ceremonyYear
+    });
+    lastResultsUpdatedAt = data.finalizedAt
+      ? new Date(data.finalizedAt)
+      : new Date();
+    updateResultsUpdatedLabels();
+    renderLeaderboard();
+    renderResults();
+    updatePicksPanel();
+    setStatus(elements.resultsStatus, t("resultsUpdated"));
+  } catch (error) {
+    // Ignore missing or invalid file
+  }
+}
+
 async function fetchWinnersFromOscars() {
   if (!elements.resultsStatus || !state.ceremonyYear) {
     return;
@@ -1845,6 +1881,7 @@ async function init() {
       }
     });
   }
+  await loadResultsFromFile();
   fetchWinnersFromOscars();
   scheduleResultsPolling();
   if (elements.languageSelect) {

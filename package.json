@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "fetch-nominees": "node scripts/fetch-nominees.js"
+    "fetch-nominees": "node scripts/fetch-nominees.js",
+    "fetch-results": "node scripts/fetch-results.js"
   },
   "dependencies": {
     "cheerio": "^1.2.0"
