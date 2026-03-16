@@ -337,6 +337,33 @@ html[data-theme="dark"] .eyebrow-icon svg {
   gap: 1rem;
 }
 
+.leaderboard-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.leaderboard-year-group {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 1rem;
+}
+
+.leaderboard-heading-row select {
+  font-size: 0.9rem;
+  padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+  min-width: 4rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.65rem;
+}
+
 .icon-button {
   border: 1px solid var(--border);
   background: var(--bg);

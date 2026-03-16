@@ -130,9 +130,12 @@ async function main() {
     ceremonyYear
   };
 
-  await fs.writeFile(OUTPUT_PATH, JSON.stringify(output, null, 2));
+  const outputJson = JSON.stringify(output, null, 2);
+  await fs.writeFile(OUTPUT_PATH, outputJson);
+  const resultsYearPath = path.join(__dirname, "..", "data", `results-${ceremonyYear}.json`);
+  await fs.writeFile(resultsYearPath, outputJson);
   console.log(
-    `Saved ${Object.keys(winnersByCategoryId).length} category results to data/results.json`
+    `Saved ${Object.keys(winnersByCategoryId).length} category results to data/results.json and data/results-${ceremonyYear}.json`
   );
 }
 

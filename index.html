@@ -221,7 +221,14 @@
         <div class="stack">
           <section aria-labelledby="leaderboard-title" class="card stack expandable-card" id="leaderboard-card">
             <div class="card-header">
-              <h2 id="leaderboard-title" data-i18n="leaderboardTitle">Leaderboard</h2>
+              <div class="leaderboard-heading-row">
+                <h2 id="leaderboard-title" data-i18n="leaderboardTitle">Leaderboard</h2>
+                <span class="leaderboard-year-group">
+                  <label for="leaderboard-year" class="visually-hidden" data-i18n="leaderboardYearLabel">Year</label>
+                  <select id="leaderboard-year" aria-label="Select year">
+                  </select>
+                </span>
+              </div>
               <button
                 class="icon-button"
                 type="button"

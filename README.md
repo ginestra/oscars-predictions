@@ -57,6 +57,24 @@ npm run fetch-nominees -- https://www.oscars.org/oscars/ceremonies/2025
 Note: the Oscars site blocks automated requests. The script automatically falls back
 to a read-only proxy when direct fetches are denied.
 
+## Update results (after ceremony)
+
+When the Oscars site has winners, fetch and save them to `data/results.json`:
+
+```bash
+npm run fetch-results
+```
+
+## Static leaderboard snapshot
+
+To make the leaderboard viewable when the database is unavailable, snapshot it while Supabase is up:
+
+```bash
+npm run fetch-leaderboard
+```
+
+This writes `data/leaderboard-{year}.json`. The app loads from this file when the database returns no picks. Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (env vars) or use `js/config.js` for auth.
+
 ## Data and Customization
 
 Edit `data/categories.json` to:

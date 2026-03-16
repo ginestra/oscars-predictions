@@ -15,7 +15,9 @@ const state = {
   pointsPerCategory: 1,
   ceremonyDate: null,
   picks: [],
-  ceremonyYear: null
+  ceremonyYear: null,
+  viewingYear: null,
+  archivedLeaderboard: null
 };
 
 let currentLanguage = "en";
@@ -103,6 +105,7 @@ const elements = {
   resultsSection: document.querySelector("#results-title")?.closest("section"),
   leaderboardBody: document.querySelector("#leaderboard-body"),
   leaderboardStatus: document.querySelector("#leaderboard-status"),
+  leaderboardYearSelect: document.querySelector("#leaderboard-year"),
   leaderboardExpandButton: document.querySelector("#leaderboard-expand"),
   leaderboardOverlay: document.querySelector("#leaderboard-overlay"),
   leaderboardSection: document.querySelector("#leaderboard-card"),
@@ -179,6 +182,7 @@ const translations = {
     leaderboardUpdated: "Leaderboard updated.",
     leaderboardExpandLabel: "Expand leaderboard table",
     leaderboardCollapseLabel: "Collapse leaderboard table",
+    leaderboardYearLabel: "Year",
     picksClosedTitle: "Voting closed - Results",
     picksClosedSubtitle: "Results are updated as winners are announced.",
     similarityTitle: "Vote similarity",
@@ -294,6 +298,7 @@ const translations = {
     leaderboardUpdated: "Classifica aggiornata.",
     leaderboardExpandLabel: "Espandi tabella classifica",
     leaderboardCollapseLabel: "Comprimi tabella classifica",
+    leaderboardYearLabel: "Anno",
     picksClosedTitle: "Votazioni chiuse - Risultati",
     picksClosedSubtitle: "I risultati si aggiornano man mano che vengono annunciati.",
     similarityTitle: "Somiglianza voti",
@@ -1157,8 +1162,10 @@ function renderResults() {
 }
 
 function calculateScores() {
-  const picks = state.picks;
-  const results = getResults();
+  const picks =
+    state.archivedLeaderboard?.picks ?? state.picks;
+  const results =
+    state.archivedLeaderboard?.results ?? getResults();
   const scores = [];
 
   picks.forEach((entry) => {
@@ -1269,7 +1276,7 @@ function renderSimilarityMatrix() {
   if (!elements.similarityHeader || !elements.similarityBody) {
     return;
   }
-  const rows = state.picks || [];
+  const rows = (state.archivedLeaderboard?.picks ?? state.picks) || [];
   const users = rows
     .map((row) => row.username)
     .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
@@ -1529,6 +1536,108 @@ async function fetchLeaderboardPicks() {
   } catch (error) {
     return;
   }
+}
+
+async function loadLeaderboardFromFile() {
+  if (!state.ceremonyYear) {
+    return;
+  }
+  try {
+    const response = await fetch(`data/leaderboard-${state.ceremonyYear}.json`);
+    if (!response.ok) {
+      return;
+    }
+    const data = await response.json();
+    const hasPicks =
+      data &&
+      Array.isArray(data.picks) &&
+      data.ceremonyYear === state.ceremonyYear;
+    if (!hasPicks) {
+      return;
+    }
+    state.picks = data.picks;
+  } catch (_) {
+    // Ignore – file may not exist
+  }
+}
+
+async function populateLeaderboardYearSelect() {
+  if (!elements.leaderboardYearSelect || !state.ceremonyYear) return;
+  let years = [];
+  try {
+    const res = await fetch("data/available-years.json");
+    if (res.ok) {
+      const data = await res.json();
+      years = Array.isArray(data) ? data : [];
+    }
+  } catch (_) {}
+  if (years.length === 0) {
+    years = [state.ceremonyYear];
+  }
+  years = years.filter((y) => String(y).match(/^\d{4}$/));
+  years.sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
+  elements.leaderboardYearSelect.innerHTML = "";
+  for (const y of years) {
+    const opt = document.createElement("option");
+    opt.value = String(y);
+    opt.textContent = String(y);
+    if (String(y) === (state.viewingYear || state.ceremonyYear)) {
+      opt.selected = true;
+    }
+    elements.leaderboardYearSelect.appendChild(opt);
+  }
+}
+
+async function loadLeaderboardForYear(year) {
+  const yearStr = String(year);
+  if (yearStr === state.ceremonyYear) {
+    state.viewingYear = yearStr;
+    state.archivedLeaderboard = null;
+    return;
+  }
+  try {
+    const [lbRes, resRes] = await Promise.all([
+      fetch(`data/leaderboard-${yearStr}.json`),
+      fetch(`data/results-${yearStr}.json`)
+    ]);
+    const picks = lbRes.ok ? (await lbRes.json())?.picks : null;
+    let results = null;
+    if (resRes.ok) {
+      const data = await resRes.json();
+      if (data?.ceremonyYear === yearStr) results = data;
+    }
+    if (!resRes.ok) {
+      const fallback = await fetch("data/results.json");
+      if (fallback.ok) {
+        const data = await fallback.json();
+        if (data?.ceremonyYear === yearStr) results = data;
+      }
+    }
+    state.viewingYear = yearStr;
+    state.archivedLeaderboard = {
+      picks: Array.isArray(picks) ? picks : [],
+      results: results || { winnersByCategoryId: {}, ceremonyYear: yearStr }
+    };
+    renderLeaderboard();
+  } catch (_) {
+    state.viewingYear = yearStr;
+    state.archivedLeaderboard = {
+      picks: [],
+      results: { winnersByCategoryId: {}, ceremonyYear: yearStr }
+    };
+    renderLeaderboard();
+  }
+}
+
+function handleLeaderboardYearChange() {
+  const year = elements.leaderboardYearSelect?.value;
+  state.viewingYear = year || state.ceremonyYear;
+  state.archivedLeaderboard = null;
+  if (year === state.ceremonyYear) {
+    renderLeaderboard();
+    return;
+  }
+  loadLeaderboardForYear(year);
 }
 
 async function handleCopyLink() {
@@ -1798,6 +1907,9 @@ async function handleLanguageChange(value) {
   renderCurrentUser();
   renderCategories();
   await fetchLeaderboardPicks();
+  if (state.picks.length === 0) {
+    await loadLeaderboardFromFile();
+  }
   renderLeaderboard();
   applyDeadlineState();
   renderResults();
@@ -1834,6 +1946,7 @@ async function init() {
     state.pointsPerCategory = data.pointsPerCategory || 1;
     state.ceremonyDate = data.ceremonyDate || null;
     state.ceremonyYear = data.year || null;
+    state.viewingYear = state.ceremonyYear;
   } catch (error) {
     setStatus(
       elements.dataStatus,
@@ -1849,6 +1962,11 @@ async function init() {
   renderCurrentUser();
   renderCategories();
   await fetchLeaderboardPicks();
+  if (state.picks.length === 0) {
+    await loadLeaderboardFromFile();
+  }
+  state.viewingYear = state.ceremonyYear;
+  await populateLeaderboardYearSelect();
   updatePicksPanel();
   renderResults();
   renderLeaderboard();
@@ -1887,6 +2005,11 @@ async function init() {
   if (elements.languageSelect) {
     elements.languageSelect.addEventListener("change", (event) => {
       handleLanguageChange(event.target.value);
+    });
+  }
+  if (elements.leaderboardYearSelect) {
+    elements.leaderboardYearSelect.addEventListener("change", () => {
+      handleLeaderboardYearChange();
     });
   }
   syncSimilarityButtonState();
